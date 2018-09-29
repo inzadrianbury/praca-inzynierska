@@ -1,6 +1,6 @@
 ## Spis treści
 
-1. CEL I ZAKRES PRACY 
+1. [CEL I ZAKRES PRACY](./cel-i-zakres-pracy.html)
 2. WSTĘP 
 3. WPROWADZENIE DO NORMY STEP
     1. NORMA STEP
