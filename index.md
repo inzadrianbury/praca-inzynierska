@@ -1,37 +1,67 @@
-## Welcome to GitHub Pages
+## Spis treści
 
-You can use the [editor on GitHub](https://github.com/inzadrianbury/inzadrianbury/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/inzadrianbury/inzadrianbury/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+1. CEL I ZAKRES PRACY 
+2. WSTĘP 
+3. WPROWADZENIE DO NORMY STEP
+    1. NORMA STEP
+    2. JĘZYK EXPRESS ORAZ EXPRESS-G
+    3. STEP-NC
+    4. NORMA ISO 14649
+    5. NORMA ISO 14649 – CZĘŚĆ 201
+4. PROJEKTOWANIE ARCHITEKTURY SYSTEMU APLIKACJI
+    1. OMÓWIENIE STRUKTURY TYPU KLIENT - SERWER
+    2. OMÓWIENIE PROTOKOŁU KOMUNIKACJI POMIĘDZY PRZEGLĄDARKĄ A SERWEREM - POŁĄCZENIE HTTP
+    3. RODZAJE STRON INTERNETOWYCH 
+    4. KOMUNIKACJA MIĘDZY APLIKACJAMI - API 
+    5. ARCHITEKTURA API - REST 
+    6. PLANOWANIE API ZGODNIE Z ZASADAMI REST 
+    7. PROJEKTOWANIE API DLA SERWISU INTERNETOWEGO
+    8. PROXY 
+    9. BAZA DANYCH 
+5.IMPLEMENTACJA SERWISU INTERNETOWEGO
+    1. OMÓWIENIE ŚRODOWISKA NODE.JS ORAZ FRAMEWORK'A EXPRESS.JS 
+    2. OMÓWIENIE MENEDŻERA PAKIETÓW JS – NPM
+    3. ZAPROJEKTOWANIE ARCHITEKTURY SERWISU 
+    4. PLIK KONFIGURACYJNY
+    5. MONGOOSE – BIBLIOTEKA DO ZARZĄDZANIE BAZĄ DANYCH M ONGO DB
+    6. TWORZENIE SERWISÓW
+    7. TWORZENIE KONTROLERÓW
+    8. UWIERZYTELNIENIE UŻYTKOWNIKA
+    9. MODUŁ GŁÓWNY APLIKACJI 
+    10. URUCHOMIENIE APLIKACJI
+6.IMPLEMENTACJA APLIKACJI PRZEGLĄDARKOWEJ 
+    1. OMÓWIENIE FRAMEWORK'A A NGULAR 
+    2. OMÓWIENIE WYKORZYSTANYCH NARZĘDZI FRONT - END'OWYCH
+    3. KOMUNIKACJA Z SERWEREM
+    4. PROCES UWIERZYTELNIANIA 
+    5. PROJEKTOWANIE FORMULARZA "MACHINE TOOL SPECIFICATION"
+    6. PROJEKTOWANIE FUNKCJONALNOŚCI DO TWORZENIA FORMULARZY 
+    7. PROJEKTOWANIE PANELU GŁÓWNEGO STRONY
+    8. UTWORZENIE MODUŁU GŁÓWNEGO
+    9. PRZYGOTOWANIE APLIKACJI DO URUCHOMIENIA
+    10. OGRANICZENIA
+7.KONFIGUROWANIE SERWISU PROXY 
+    1. OMÓWIENIE SERWISU N GINX
+    2. KONFIGURACJA N GINX 
+8.PRZYGOTOWANIE SYSTEMU APLIKACJI DO URUCHOMIENIA 
+    1. DOCKER
+    2. PLIK KONFIGURACYJNY DO BUDOWANIA OBRAZÓW D OCKER'OWYCH 
+    3. AUTOMATYCZNE BUDOWANIE ORAZ UDOSTĘPNIANIE OBRAZÓW 
+    4. COMPOSE – ZDEFINIOWANE PLIKU KONFIGURACYJNEGO
+    5. ZARZĄDZANIE SERWISAMI 
+9.TESTOWANIE APLIKACJI
+    1. ZALOGOWANIE SIĘ DO APLIKACJI 
+    2. UTWORZENIE NOWEGO FOLDERU GŁÓWNEGO 
+    3. UTWORZENIE FORMULARZA "MACHINE TOOL SPECIFICATION"
+    4. DODANIE NOWYCH REKORDÓW DO FORMULARZA
+    5. GENEROWANIE PLIKU XML 
+    6. TWORZENIE WŁASNEGO FORMULARZA 
+    7. PODGLĄD ZAWARTOŚCI BAZY DANYCH 
+10. STATYSTYKI ORAZ WYKORZYSTANE NARZĘDZIA 
+11. PODSUMOWANIE 
+12. DYSKUSJA 
+13. SUMMARY
+14. LITERATURA
+15. SPIS ILUSTRACJI
+16. SPIS TABEL 
+17. ANEKS 
