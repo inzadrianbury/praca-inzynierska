@@ -1,13 +1,13 @@
-## Spis treści
+# Spis treści
 
 1. [CEL I ZAKRES PRACY](#cel-i-zakres-pracy)
-2. WSTĘP 
-3. WPROWADZENIE DO NORMY STEP
-    1. NORMA STEP
-    2. JĘZYK EXPRESS ORAZ EXPRESS-G
-    3. STEP-NC
-    4. NORMA ISO 14649
-    5. NORMA ISO 14649 – CZĘŚĆ 201
+2. [WSTĘP](#wstep)
+3. [WPROWADZENIE DO NORMY STEP](#wprowadzanie-do-normy-step)
+    1. [NORMA STEP](#norma-step)
+    2. [JĘZYK EXPRESS ORAZ EXPRESS-G](#jezyk-express-oraz-express-g)
+    3. [STEP-NC](#step-nc)
+    4. [NORMA ISO 14649](#norma-iso-14649)
+    5. [NORMA ISO 14649 – CZĘŚĆ 201](#norma-iso-14649-czesc-201)
 4. PROJEKTOWANIE ARCHITEKTURY SYSTEMU APLIKACJI
     1. OMÓWIENIE STRUKTURY TYPU KLIENT - SERWER
     2. OMÓWIENIE PROTOKOŁU KOMUNIKACJI POMIĘDZY PRZEGLĄDARKĄ A SERWEREM - POŁĄCZENIE HTTP
@@ -68,7 +68,7 @@
 
 * * *
 
-## <a name="cel-i-zakres-pracy"></a> Cel i zakres pracy
+# <a name="cel-i-zakres-pracy"></a> Cel i zakres pracy
 
 Celem niniejszej pracy dyplomowej jest utworzenie aplikacji internetowej, z możliwością
 jej uruchomienia z dowolnej, najnowszej przeglądarki internetowej na komputerze osobistym,
@@ -88,6 +88,194 @@ kroki:
 5. Uruchomienie systemu aplikacji
 6. Testowanie systemu
 
+* * *
+
+# <a name="#wstep"></a> Wstęp
+
+Nowoczesne zakłady produkcyjne są budowane na całym świecie, które zawierają sprzęt
+oraz oprogramowanie od różnych producentów. Ogromne ilości informacji o produktach muszą
+być przesyłane między różnymi urządzeniami i maszynami. Przez to, że każdy system posiada
+własne formaty danych, te same informacje muszą być wprowadzane wielokrotnie, prowadząc do
+nadmiarowości i błędów [1]. W celu rozwiązania opisanego problemu powstała Międzynarodowa
+Organizacja Normalizacyjna (ISO), której celem jest ułatwienie międzynarodowej koordynacji i
+unifikacji standardów przemysłowych.
 
 
+Jedną z norm zdefiniowaną przez ISO jest norma oznaczona numerem 14649-201, będącą
+częścią normy STEP oraz STEP-NC. Norma ta definiuje obiektową strukturę danych, która
+jednoznacznie charakteryzuje dostępne obrabiarki (frezarki, centra obróbcze, tokarki i
+wielozadaniowe maszyny). Dzięki takiemu standardowi dowolny producent obrabiarek może
+przekazywać dane do dowolnego systemu CAD/CAM, a producenci systemów CAD/CAM mogą
+wymieniać między sobą dane bez konieczności integracji z każdym z dostępnych systemów
+osobno.
 
+
+Niniejsza praca inżynierska ma na celu stworzenie aplikacji, za pomocą której
+użytkownik będzie mógł wprowadzić, zapisać a następnie wyeksportować wprowadzone dane
+techniczne obrabiarki do formatu XML. Wszystko to zgodnie z normą ISO 14649-201.
+
+* * *
+
+# <a name="wprowadzanie-do-normy-step"></a> Wprowadzenie do normy STEP
+
+## <a name="norma-step"></a> Norma STEP
+
+Nazwa STEP (Standard for the Exchange of Product Model Data) jest to powszechne
+określenie normy ISO 10303. STEP zajmuje się danymi o produktach z projektowania
+mechanicznego i elektrycznego, wymiarowaniem geometrycznym i tolerancją, analizą i
+produkcją, a także dodatkowymi informacjami specyficznymi dla różnych branż, takich jak
+motoryzacja, przemysł lotniczy, budownictwo, przemysł stoczniowy, ropa i gaz, przetwarzanie
+roślinnych surowców i wiele inne. Zakres ten stale się powiększa, gdyż wydawane są nowe części
+normy. Części te są nazywane ISO 10303-xxx, gdzie xxx jest numerem części, a każda jest
+standardem samym w sobie, mimo że jest składnikiem większej całości i współzależna od innych
+części [2]. Na rys. 3-1 został przedstawiony schemat ideowy normy STEP.
+
+![Wymiana danych pomiędzy różnymi systemami](assets/images/wymiana-danych-pomiedzy-roznymi-systemami.png)
+
+Podobnie jak inne normy ISO, STEP jest chroniony prawami autorskimi ISO i nie jest
+swobodnie dostępny. Jednak schematy 10303 EXPRESS są udostępniane bezpłatnie, podobnie jak
+zalecane praktyki dla wdrażających normę [3]
+
+## <a name="jezyk-express-oraz-express-g"></a> Język EXPRESS oraz EXPRESS-G
+
+EXPRESS to bogaty i dojrzały język służący do definiowania obiektowych schematów
+danych. Jest on częścią standardu STEP (ISO 10303) i jest szeroko stosowany w modelowaniu
+danych dla zastosowań przemysłowych na dużą skalę, w tym do produkcji, inżynierii, platform
+wiertniczych, zakładów przetwórczych itp. Jest wykorzystywany wszędzie tam, gdzie
+projektowanie jest wspomagane komputerowo (systemy CAD). Jest on używany do opisania i
+konfiguracji trójwymiarowej geometrii części stałych oraz i zespołów tych części w różnego 
+rodzaju maszynach, począwszy od samochodów, po samoloty, skończywszy na platformach
+wiertniczych, statkach i elektrowniach. Jego celem jest uwolnienie danych CAD od zależności
+zastrzeżonych systemów komputerowych i formatów, a tym samym umożliwienie wymiany
+danych opisujących wytwarzane produkty między systemami podczas projektowania procesu
+produkcyjnego [4].
+
+Użyteczność tego języka sprawiła, że musiał sprostać wyzwaniom wykraczającym poza
+pierwotne przewidywania. Oprócz kształtu i konfiguracji produktu, jego wymagań projektowych
+oraz instrukcji obsługi, należało również opisać historię obsługi i użytkowania w firmie. W
+przypadku dużego lub kosztownego produktu informacje o cyklu życia mogą być co najmniej tak
+samo ważne jak opis jego fizycznej konfiguracji. Informacje mogą być potrzebne w czasie
+rzeczywistym pomiędzy wieloma użytkownikami w środowisku sieciowym, a nie tylko
+wymieniane okresowo, co było pierwotną intencją STEP.
+
+EXPRESS jest językiem leksykalnym o charakterze obiektowym, jest podobny do
+języków programowania takich jak Pascal, czy C. Na rys. 3-2 został przedstawiony przykładowy
+zapis schematu „Family” w języku EXPRESS.
+
+```
+SCHEMA Family;
+
+ENTITY Human
+    ABSTRACT SUPERTYPE OF (ONEOF (Man, Woman));
+    name: STRING;
+    mother: OPTIONAL Woman;
+    father: OPTIONAL Man;
+END_ENTITY;
+
+ENTITY Man
+    SUBTYPE OF (Human);
+END_ENTITY;
+
+ENTITY Woman
+    SUBTYPE of (Human);
+END_ENTITY;
+
+END_SCHEMA;
+```
+
+Schemat „Family” zawiera encję („ENTITY”) o nazwie „Human”. Encja ta została
+oznaczona jako abstrakcyjna („ASBSTRACT”). Powoduje to, że nie może być tworzona
+samodzielnie, ale może być podtypem innej encji. W tym schemacie encja „Human” jest podtypem
+encji „Woman” oraz „Man”. Każda encja „Human” lub jej podtyp zawiera pole: „name” oraz
+opcjonalnie „mother” oraz „father”, które wskazują na inny obiekt („Man” lub „Woman”).
+
+Instrukcja obsługi języka EXPRESS w ISO 10303-11 definiuje także graficzny
+podzestaw języka leksykalnego o nazwie EXPRESS-G. Jest to standardowa notacja graficzna dla
+modeli informacyjnych. Uważa się go powszechnie za przydatny dodatek do języka EXPRESS,
+który służy do wyświetlania definicji encji i typów, relacji i liczności. Ta notacja graficzna
+obsługuje podzbiór języka EXPRESS. Jedną z zalet używania EXPRESS-G nad EXPRESS jest
+to, że struktura modelu danych może być przedstawiona w bardziej zrozumiały sposób, a wadą,
+że nie można formalnie określić ograniczeń złożonych [5].
+
+rys. 3-3 przedstawia schemat danych zapisany za pomocą języka EXPRESS-G. Definicje
+typów danych i schematów na diagramie są oznaczone ramkami, które zawierają nazwę
+definiowanego elementu. Relacje między elementami są oznaczone liniami łączącymi te pola.
+Odmienne style linii dostarczają informacji na temat rodzaju definicji lub relacji.
+
+![Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem
+poszczególnych relacji [ISO 10303-11]](assets/images/model-family-express-g.png)
+
+## <a name="STEP-NC"></a> STEP-NC
+
+STEP-NC jest językiem sterowania obrabiarek, który rozszerza normę ISO 10303 o
+modele obróbki, które są zawarte w ISO 14649. Dodaje również wymiary geometryczne i dane
+tolerancji oraz model STEP PDM do integracji z większymi przedsiębiorstwami. Wynik tych
+działań został znormalizowany i zapisany jako ISO 10303-238 (znany również jako AP238) [6].
+
+Obrabiarki ewoluowały od prostych maszyn z kontrolerami, które nie posiadały pamięci,
+napędzane przez perforowaną taśmę do dzisiejszych, wysoce automatyzowanych systemów
+sterowanych numerycznie, znanych jako obrabiarki CNC. Możliwości obrabiarek zmieniły się
+radykalnie, ale język programowania zasadniczo pozostał taki sam. Wprowadzanie danych do
+systemu CNC za pomocą G-code’ów (opisanych przez normę ISO 6983, również znaną pod nazwą RS-274)
+jest często specyficzne dla maszyny i ograniczone do poleceń ruchu osi. Przez to
+obrabiarka nie posiada żadnych użytecznych informacji o produkcie, takich jak dane o wymiarach
+geometrycznych półfabrykatu, tolerancjach, właściwościach materiału, ustawieniu urządzenia i
+innych informacjach wytworzonych podczas projektowania i planowania technologii produkcji .
+Wszystkie te informacje znikną podczas konwersji ścieżki narzędzia w G-Code, przez co przepływ
+informacji staje się jednokierunkowy [7]. Uproszczony schemat przepływu danych został
+przedstawiony na rys. 3-4.
+
+![Sposób programowania obrabiarek CNC za pomocą G-code'ów [źródło własne]](assets/images/programowanie-cnc-g-codami.png)
+
+STEP-NC został zaprojektowany w celu zastąpienia kodów G nowoczesnym protokołem
+komunikacyjnym, który łączy dane procesowe sterowane komputerowo (CNC) z opisem produktu
+obrabianej części. Program STEP-NC może wykorzystywać pełny zakres konstrukcji
+geometrycznych ze standardu STEP do przekazywania ścieżek narzędzi niezależnych od
+urządzenia CNC. Dostarcza również opis operacyjny CAM i geometrię STEP CAD do obrabiarki
+CNC, dzięki czemu przedmioty obrabiane, uchwyty i kształty narzędzi skrawających mogą być
+wizualizowane i analizowane w kontekście ścieżek narzędziowych. Dzięki takiej wizualizacji
+możliwe jest pokazanie ścieżki narzędzia w kontekście maszyny i przedmiotu obrabianego,
+symulacji na maszynie, w celu sprawdzenia, czy nie występują zakłócenia i inne niepożądane
+zachowania, a dzięki wspólnemu protokołowi wymiany danych możliwe jest wysłanie informacji
+zwrotnej z produkcji do projektu [8]. Uproszczony schemat przepływu danych pomiędzy
+systemem CAD/CAM a obrabiarką CNC został przedstawiony na rys. 3-5.
+
+![Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]](./assets/images/programowanie-cnc-g-norma.png)
+
+## <a name="norma-iso-14649"></a> Norma ISO 14649
+
+ISO 14649 to model transferu danych pomiędzy systemami CAD/CAM i maszynami
+CNC, który zastępuje normę ISO 6983 poprzez usunięcie wad precyzując procesy obróbki
+wykorzystując koncepcję obiektową. CNC jest odpowiedzialny za tłumaczenie kroków roboczych
+na ruch osi i pracę narzędzia. Główną zaletą ISO 14649 jest wykorzystanie istniejących modeli
+danych z ISO 10303. Jako że ISO 14649 zapewnia kompleksowy model procesu produkcyjnego,
+może być również wykorzystany jako podstawa dwu- i wielokierunkowej wymiany danych
+między innymi systemami informatycznymi [9].
+
+ISO 14649 reprezentuje zorientowane obiektowo, informacyjno-kontekstowe podejście
+do programowania sterowanego numerycznego (NC), które zastępuje redukcję danych do prostych
+instrukcji przełączania lub ruchów liniowych i kołowych. Ponieważ jest zorientowany na obiekty
+i funkcje oraz opisuje operacje obróbki wykonywane na obrabianym przedmiocie, a nie ruchy osi
+zależne od maszyny, będzie on działał na różnych obrabiarkach lub sterownikach [9].
+
+Formularz informacji w ISO 14649 pozwala na znaczne ulepszenia w stosunku do
+istniejących metod, ale w celu wsparcia jeszcze bardziej wydajnej produkcji, oprócz informacji o
+produkcji potrzebny jest opis środowiska produkcyjnego. W związku z tym, ta część ISO 14649
+jest pierwszym krokiem umożliwiającym opis obrabiarek jako zasobów produkcyjnych. Opis
+umożliwia projektantom procesów klasyfikowanie ich potrzeb maszynowych w ramach planu
+mikro procesowego (plik ISO 14649), określanego jako model wymagań. Model umożliwia także
+opisanie istniejących obrabiarek jako zasobów do produkcji, określanych jako modele katalogowe
+[9].
+
+Ta część normy ISO 14649 ma na celu zapewnienie podstaw do planowania i symulacji
+procesów, na przykład dla twórców kontrolerów i programistów obrabiarek do opisywania ich
+produktów, a także do badań. Norma ta określa również elementy danych opisu maszyn
+specyficzne dla obrabiarek, potrzebne jako dane procesowe dla produkcji i charakterystyk maszyn.
+Opisy obrabiarek objęte tym schematem to frezarki, centra obróbcze, tokarki i wielozadaniowe
+maszyny. Ta część ISO 14649 nie ma na celu zastąpienia istniejących standardów opisu
+obrabiarek, ale obejmuje konkretne potrzeby opisu zasobów produkcyjnych dla potrzeb
+produkcyjnych w technologiach opisanych w ISO 14649.
+
+## <a name="norma-iso-14649-czesc-201"></a> Norma ISO 14649 – część 201
+
+// ToDo
