@@ -90,7 +90,7 @@ kroki:
 
 * * *
 
-# <a name="#wstep"></a> Wstęp
+# <a name="wstep"></a> Wstęp
 
 Nowoczesne zakłady produkcyjne są budowane na całym świecie, które zawierają sprzęt
 oraz oprogramowanie od różnych producentów. Ogromne ilości informacji o produktach muszą
