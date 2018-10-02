@@ -131,6 +131,7 @@ standardem samym w sobie, mimo że jest składnikiem większej całości i wspó
 części [2]. Na rys. 3-1 został przedstawiony schemat ideowy normy STEP.
 
 ![Wymiana danych pomiędzy różnymi systemami](assets/images/wymiana-danych-pomiedzy-roznymi-systemami.png)
+*rys. 3-1 Wymiana danych pomiędzy różnymi systemami [źródło własne]*
 
 Podobnie jak inne normy ISO, STEP jest chroniony prawami autorskimi ISO i nie jest
 swobodnie dostępny. Jednak schematy 10303 EXPRESS są udostępniane bezpłatnie, podobnie jak
@@ -182,6 +183,7 @@ END_ENTITY;
 
 END_SCHEMA;
 ```
+*rys. 3-2 Model schematu "Family" zapisany w języku EXPRESS*
 
 Schemat „Family” zawiera encję („ENTITY”) o nazwie „Human”. Encja ta została
 oznaczona jako abstrakcyjna („ASBSTRACT”). Powoduje to, że nie może być tworzona
@@ -202,10 +204,10 @@ typów danych i schematów na diagramie są oznaczone ramkami, które zawierają
 definiowanego elementu. Relacje między elementami są oznaczone liniami łączącymi te pola.
 Odmienne style linii dostarczają informacji na temat rodzaju definicji lub relacji.
 
-![Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem
-poszczególnych relacji [ISO 10303-11]](assets/images/model-family-express-g.png)
+![Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji [ISO 10303-11]](assets/images/model-family-express-g.png)
+*rys. 3-3 Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji [ISO 10303-11]*
 
-## <a name="STEP-NC"></a> STEP-NC
+## <a name="step-nc"></a> STEP-NC
 
 STEP-NC jest językiem sterowania obrabiarek, który rozszerza normę ISO 10303 o
 modele obróbki, które są zawarte w ISO 14649. Dodaje również wymiary geometryczne i dane
@@ -226,6 +228,7 @@ informacji staje się jednokierunkowy [7]. Uproszczony schemat przepływu danych
 przedstawiony na rys. 3-4.
 
 ![Sposób programowania obrabiarek CNC za pomocą G-code'ów [źródło własne]](assets/images/programowanie-cnc-g-codami.png)
+*rys. 3-4 Sposób programowania obrabiarek CNC za pomocą G-code'ów [źródło własne]*
 
 STEP-NC został zaprojektowany w celu zastąpienia kodów G nowoczesnym protokołem
 komunikacyjnym, który łączy dane procesowe sterowane komputerowo (CNC) z opisem produktu
@@ -241,6 +244,7 @@ zwrotnej z produkcji do projektu [8]. Uproszczony schemat przepływu danych pomi
 systemem CAD/CAM a obrabiarką CNC został przedstawiony na rys. 3-5.
 
 ![Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]](./assets/images/programowanie-cnc-g-norma.png)
+*rys. 3-5 Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]*
 
 ## <a name="norma-iso-14649"></a> Norma ISO 14649
 
