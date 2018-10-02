@@ -1,4 +1,5 @@
 # Spis treści
+
 * * *
 
 1. [CEL I ZAKRES PRACY](#cel-i-zakres-pracy)
@@ -68,6 +69,7 @@
 17. ANEKS 
 
 # <a name="cel-i-zakres-pracy"></a> Cel i zakres pracy
+
 * * *
 
 Celem niniejszej pracy dyplomowej jest utworzenie aplikacji internetowej, z możliwością
@@ -90,6 +92,7 @@ kroki:
 
 
 # <a name="wstep"></a> Wstęp
+
 * * *
 
 Nowoczesne zakłady produkcyjne są budowane na całym świecie, które zawierają sprzęt
@@ -114,6 +117,7 @@ techniczne obrabiarki do formatu XML. Wszystko to zgodnie z normą ISO 14649-201
 
 
 # <a name="wprowadzanie-do-normy-step"></a> Wprowadzenie do normy STEP
+
 * * *
 
 ## <a name="norma-step"></a> Norma STEP
@@ -323,6 +327,8 @@ encje, które zostały zaimplementowane w napisanej aplikacji.
 
 
 # <a name="projektowanie-architektury-systemu-aplikacji"></a> Projektowanie architektury systemu aplikacji
+
+* * *
 
 Przed przystąpieniem do pisania aplikacji należy najpierw zaplanować architekturę
 całego systemu, który zostanie utworzony. W związku tym, że aplikacja ma zostać utworzona dla
