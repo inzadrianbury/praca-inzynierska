@@ -10,7 +10,7 @@
     4. [NORMA ISO 14649](#norma-iso-14649)
     5. [NORMA ISO 14649 – CZĘŚĆ 201](#norma-iso-14649-czesc-201)
 4. [PROJEKTOWANIE ARCHITEKTURY SYSTEMU APLIKACJI](#projektowanie-architektury-systemu-aplikacji)
-    1. OMÓWIENIE STRUKTURY TYPU KLIENT - SERWER
+    1. [OMÓWIENIE STRUKTURY TYPU KLIENT - SERWER](#omownie-struktury-typu-klient-serwer)
     2. OMÓWIENIE PROTOKOŁU KOMUNIKACJI POMIĘDZY PRZEGLĄDARKĄ A SERWEREM - POŁĄCZENIE HTTP
     3. RODZAJE STRON INTERNETOWYCH
     4. KOMUNIKACJA MIĘDZY APLIKACJAMI - API
@@ -203,7 +203,7 @@ typów danych i schematów na diagramie są oznaczone ramkami, które zawierają
 definiowanego elementu. Relacje między elementami są oznaczone liniami łączącymi te pola.
 Odmienne style linii dostarczają informacji na temat rodzaju definicji lub relacji.
 
-![Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji [ISO 10303-11]](assets/images/model-family-express-g.png)
+![Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji](assets/images/model-family-express-g.png)
 *rys. 3-3 Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji [ISO 10303-11]*
 
 
@@ -227,7 +227,7 @@ Wszystkie te informacje znikną podczas konwersji ścieżki narzędzia w G-Code,
 informacji staje się jednokierunkowy [7]. Uproszczony schemat przepływu danych został
 przedstawiony na rys. 3-4.
 
-![Sposób programowania obrabiarek CNC za pomocą G-code'ów [źródło własne]](assets/images/programowanie-cnc-g-codami.png)
+![Sposób programowania obrabiarek CNC za pomocą G-code'ów](assets/images/programowanie-cnc-g-codami.png)
 *rys. 3-4 Sposób programowania obrabiarek CNC za pomocą G-code'ów [źródło własne]*
 
 STEP-NC został zaprojektowany w celu zastąpienia kodów G nowoczesnym protokołem
@@ -243,7 +243,7 @@ zachowania, a dzięki wspólnemu protokołowi wymiany danych możliwe jest wysł
 zwrotnej z produkcji do projektu [8]. Uproszczony schemat przepływu danych pomiędzy
 systemem CAD/CAM a obrabiarką CNC został przedstawiony na rys. 3-5.
 
-![Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]](./assets/images/programowanie-cnc-g-norma.png)
+![Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC](./assets/images/programowanie-cnc-g-norma.png)
 *rys. 3-5 Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]*
 
 
@@ -298,7 +298,7 @@ Rdzeniem całego modelu owej normy jest encja „machine_tool”, która składa
 fragment normy został przedstawiony w sposób graficzny na rys. 3-6 za pomocą języka
 EXPRESS-G, który obrazuje występujące relacje.
 
-![Fragment normy ISO 14649-201 przedstawiający rdzeń schematu „machine_tool” za pomocą języka EXPRESS-G [10]](./assets/images/fragment-normy-iso-14649-201-express-g.png)
+![Fragment normy ISO 14649-201 przedstawiający rdzeń schematu „machine_tool” za pomocą języka EXPRESS-G](./assets/images/fragment-normy-iso-14649-201-express-g.png)
 *rys. 3-6 Fragment normy ISO 14649-201 przedstawiający rdzeń schematu „machine_tool” za pomocą języka EXPRESS-G [10]*
 
 Cała norma składa się z pięćdziesięciu dziewięciu encji połączonych między sobą
@@ -310,7 +310,7 @@ poszczególnych pól.
 
 Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól [10]
 
-![Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól [10]](./assets/images/fragment-normy-iso-14649-201-encja-machine-tool-specification-express-g.png)
+![Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól](./assets/images/fragment-normy-iso-14649-201-encja-machine-tool-specification-express-g.png)
 *rys. 3-7 Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól [10]*
 
 Zgodnie z wymaganiami postawionymi aplikacji, nie wszystkie encje zostały
@@ -323,5 +323,68 @@ encje, które zostały zaimplementowane w napisanej aplikacji.
 
 
 # <a name="projektowanie-architektury-systemu-aplikacji"></a> Projektowanie architektury systemu aplikacji
+
+Przed przystąpieniem do pisania aplikacji należy najpierw zaplanować architekturę
+całego systemu, który zostanie utworzony. W związku tym, że aplikacja ma zostać utworzona dla
+„sieci”, muszą zostać zaprojektowane co najmniej dwa komponenty: aplikacja kliencka, która
+będzie wykorzystywana przez przeglądarkę oraz aplikacja działającej po stronie serwera (aplikacja
+serwerowa [11]), która będzie obsługiwać żądania wysyłane przez klienta (przeglądarkę). Jest to
+klasyczny przykład architektury typu klient-serwer [12]. Obecnie zaprojektowany system został
+przedstawiony na rys. 4-1.
+
+![Schemat zaprojektowanego systemu składającego się z dwóch komponentów: klienta (przeglądarki) oraz serwisu internetowego](./assets/images/schemat-zaprojektowanego-systemu-1.png)
+*rys. 4-1 Schemat zaprojektowanego systemu składającego się z dwóch komponentów: klienta (przeglądarki) oraz serwisu internetowego [źródło własne]*
+
+Aplikacja ma za zadanie zapisywać dane dostarczone przez użytkownika (przeglądarkę),
+dlatego w tym celu będzie potrzebny system do zarządzania danymi (baza danych). Baza danych
+to system, który służy do przechowywania informacji oraz umożliwia sprawne manipulowanie
+nimi, dzięki czemu zarządzanie dużą ilością danych jest względnie łatwe oraz efektywne [13]. W
+Internecie jest dostępnych mnóstwo darmowych systemów bazodanowych, które umożliwiają
+wydajne manipulowanie danymi, w związku z tym nie ma potrzeby pisania własnej implementacji
+[14]. W związku z powyższym, do zaprojektowanego wcześniej systemu zostanie dołączony
+serwer bazodanowy. Aktualny schemat systemu został przedstawiony na rys. 4-2.
+
+
+![Schemat zaprojektowanego systemu składającego się z trzech komponentów: klienta (przeglądarki), serwisu internetowego oraz serwisu bazy danych](./assets/images/schemat-zaprojektowanego-systemu-2.png)
+*rys. 4-2 Schemat zaprojektowanego systemu składającego się z trzech komponentów: klienta (przeglądarki), serwisu internetowego oraz serwisu bazy danych [źródło własne]*
+
+Projektowana aplikacja ma oferować klientowi (osobie korzystającej z oprogramowania)
+bogatą paletę operacji oraz wysoką dynamikę. Aby sprostać tym wymaganiom strona internetowa
+powinna być „aplikacją”, a więc idealnie sprawdzą się w tym przypadku aplikacje jednostronicowe
+- SPA. Dobrze napisana strona typu SPA nie wymaga udziału serwera do generowania podstron,
+dlatego wystarczy tylko zwykły serwer plików, którego zadaniem będzie przechowywanie danych
+niezbędnych do uruchomienia aplikacji przez klienta (przeglądarkę) z możliwością ich pobrania.
+W związku z powyższym do zaprojektowanego systemu zostanie dołączony serwis
+przechowywujący pliki źródłowe aplikacji klienckiej. Aktualnie zaprojektowany system został
+przedstawiony na rys. 4-3.
+
+![Zaprojektowany system składający się z czterech komponentów: klienta (przeglądarki), serwisu internetowego, serwisu bazy danych oraz serwisu przechowywującego pliki źródłowe aplikacji klienckiej](./assets/images/schemat-zaprojektowanego-systemu-3.png)
+*rys. 4-3 Zaprojektowany system składający się z czterech komponentów: klienta (przeglądarki), serwisu internetowego, serwisu bazy danych oraz serwisu przechowywującego pliki źródłowe aplikacji klienckiej [źródło własne]*
+
+Klient (przeglądarka), aby móc korzystać z systemu aplikacji, musi mieć dostęp do dwóch
+komponentów: serwisu z plikami źródłowymi (w celu pobrania i uruchomienia aplikacji przez
+przeglądarkę) oraz serwisu z logiką biznesową (serwis internetowy). W takim wypadku, system
+musi udostępniać na „zewnątrz” dwa porty. Dlatego, że na danym komputerze, na jednym porcie,
+może być uruchomiona tylko jedna aplikacja jednocześnie, nie ma możliwości udostępnienia
+całego systemu pod jednym IP lub jedną domeną na jednym porcie. Stanowi to problem w
+szczególności w sieciach firmowych, w których administratorzy sieci bardzo często blokują porty,
+które nie są ustandaryzowane, przez co klient może mieć problem z nawiązaniem połączenia z
+aplikacjami. Jeżeli serwis z logiką biznesową zostanie uruchomiony na standardowym porcie, np.:
+porcie 80 (przeznaczonym dla połączeń http), to serwis z plikami źródłowymi aplikacji klienckiej
+musi zostać uruchomiony na innym porcie, który może być blokowany przez administratora sieci,
+w której aplikacja jest uruchomiona. W celu poradzenia sobie z tym problemem należy
+wykorzystać serwer proxy. Zadaniem serwera proxy będzie przekierowywanie żądań na
+odpowiednie aplikacje w zależności od dostarczonego URL’a. Dzięki takiemu zabiegowi jest
+możliwość skomunikowania się z odpowiednim serwerem bez bezpośredniej interakcji z nim, a 
+co za tym idzie ominięcie blokady portów. W związku z powyższym do zaprojektowanego
+wcześniej systemu zostanie dołączony serwis proxy. Ostateczna faza zaprojektowanego systemu
+została przedstawiona na rys. 4-4.
+
+![Zaprojektowany system składający się z pięciu aplikacji: klienta (przeglądarki), serwisu internetowego, serwisu bazy danych, serwisu przechowywującego pliki źródłowe aplikacji klienckiej oraz serwisu proxy](./assets/images/schemat-zaprojektowanego-systemu-4.png)
+*rys. 4-4 Zaprojektowany system składający się z pięciu aplikacji: klienta (przeglądarki), serwisu internetowego, serwisu bazy danych, serwisu przechowywującego pliki źródłowe aplikacji klienckiej oraz serwisu proxy [źródło własne]*
+
+
+## <a name="omownie-struktury-typu-klient-serwer"></> Omówienie struktury typu klient-serwer
+
 
 // ToDo: End this
