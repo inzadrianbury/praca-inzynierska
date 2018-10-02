@@ -1,4 +1,5 @@
 # Spis treści
+* * *
 
 1. [CEL I ZAKRES PRACY](#cel-i-zakres-pracy)
 2. [WSTĘP](#wstep)
@@ -66,9 +67,8 @@
 16. SPIS TABEL 
 17. ANEKS 
 
-* * *
-
 # <a name="cel-i-zakres-pracy"></a> Cel i zakres pracy
+* * *
 
 Celem niniejszej pracy dyplomowej jest utworzenie aplikacji internetowej, z możliwością
 jej uruchomienia z dowolnej, najnowszej przeglądarki internetowej na komputerze osobistym,
@@ -88,9 +88,9 @@ kroki:
 5. Uruchomienie systemu aplikacji
 6. Testowanie systemu
 
-* * *
 
 # <a name="wstep"></a> Wstęp
+* * *
 
 Nowoczesne zakłady produkcyjne są budowane na całym świecie, które zawierają sprzęt
 oraz oprogramowanie od różnych producentów. Ogromne ilości informacji o produktach muszą
@@ -100,7 +100,6 @@ nadmiarowości i błędów [1]. W celu rozwiązania opisanego problemu powstała
 Organizacja Normalizacyjna (ISO), której celem jest ułatwienie międzynarodowej koordynacji i
 unifikacji standardów przemysłowych.
 
-
 Jedną z norm zdefiniowaną przez ISO jest norma oznaczona numerem 14649-201, będącą
 częścią normy STEP oraz STEP-NC. Norma ta definiuje obiektową strukturę danych, która
 jednoznacznie charakteryzuje dostępne obrabiarki (frezarki, centra obróbcze, tokarki i
@@ -109,14 +108,13 @@ przekazywać dane do dowolnego systemu CAD/CAM, a producenci systemów CAD/CAM m
 wymieniać między sobą dane bez konieczności integracji z każdym z dostępnych systemów
 osobno.
 
-
 Niniejsza praca inżynierska ma na celu stworzenie aplikacji, za pomocą której
 użytkownik będzie mógł wprowadzić, zapisać a następnie wyeksportować wprowadzone dane
 techniczne obrabiarki do formatu XML. Wszystko to zgodnie z normą ISO 14649-201.
 
-* * *
 
 # <a name="wprowadzanie-do-normy-step"></a> Wprowadzenie do normy STEP
+* * *
 
 ## <a name="norma-step"></a> Norma STEP
 
@@ -136,6 +134,7 @@ części [2]. Na rys. 3-1 został przedstawiony schemat ideowy normy STEP.
 Podobnie jak inne normy ISO, STEP jest chroniony prawami autorskimi ISO i nie jest
 swobodnie dostępny. Jednak schematy 10303 EXPRESS są udostępniane bezpłatnie, podobnie jak
 zalecane praktyki dla wdrażających normę [3]
+
 
 ## <a name="jezyk-express-oraz-express-g"></a> Język EXPRESS oraz EXPRESS-G
 
@@ -207,6 +206,7 @@ Odmienne style linii dostarczają informacji na temat rodzaju definicji lub rela
 ![Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji [ISO 10303-11]](assets/images/model-family-express-g.png)
 *rys. 3-3 Model "Family" zapisany za pomocą języka EXPRESS-G wraz z objaśnieniem poszczególnych relacji [ISO 10303-11]*
 
+
 ## <a name="step-nc"></a> STEP-NC
 
 STEP-NC jest językiem sterowania obrabiarek, który rozszerza normę ISO 10303 o
@@ -246,6 +246,7 @@ systemem CAD/CAM a obrabiarką CNC został przedstawiony na rys. 3-5.
 ![Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]](./assets/images/programowanie-cnc-g-norma.png)
 *rys. 3-5 Sposób programowania obrabiarek CNC z wykorzystaniem STEP-NC [źródło własne]*
 
+
 ## <a name="norma-iso-14649"></a> Norma ISO 14649
 
 ISO 14649 to model transferu danych pomiędzy systemami CAD/CAM i maszynami
@@ -279,6 +280,7 @@ Opisy obrabiarek objęte tym schematem to frezarki, centra obróbcze, tokarki i 
 maszyny. Ta część ISO 14649 nie ma na celu zastąpienia istniejących standardów opisu
 obrabiarek, ale obejmuje konkretne potrzeby opisu zasobów produkcyjnych dla potrzeb
 produkcyjnych w technologiach opisanych w ISO 14649.
+
 
 ## <a name="norma-iso-14649-czesc-201"></a> Norma ISO 14649 – część 201
 
