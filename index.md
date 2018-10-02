@@ -356,8 +356,7 @@ serwer bazodanowy. Aktualny schemat systemu został przedstawiony na rys. 4-2.
 
 Projektowana aplikacja ma oferować klientowi (osobie korzystającej z oprogramowania)
 bogatą paletę operacji oraz wysoką dynamikę. Aby sprostać tym wymaganiom strona internetowa
-powinna być „aplikacją”, a więc idealnie sprawdzą się w tym przypadku aplikacje jednostronicowe
-- SPA. Dobrze napisana strona typu SPA nie wymaga udziału serwera do generowania podstron,
+powinna być „aplikacją”, a więc idealnie sprawdzą się w tym przypadku aplikacje jednostronicowe - SPA. Dobrze napisana strona typu SPA nie wymaga udziału serwera do generowania podstron,
 dlatego wystarczy tylko zwykły serwer plików, którego zadaniem będzie przechowywanie danych
 niezbędnych do uruchomienia aplikacji przez klienta (przeglądarkę) z możliwością ich pobrania.
 W związku z powyższym do zaprojektowanego systemu zostanie dołączony serwis
