@@ -389,7 +389,7 @@ została przedstawiona na rys. 4-4.
 *rys. 4-4 Zaprojektowany system składający się z pięciu aplikacji: klienta (przeglądarki), serwisu internetowego, serwisu bazy danych, serwisu przechowywującego pliki źródłowe aplikacji klienckiej oraz serwisu proxy [źródło własne]*
 
 
-## <a name="omownie-struktury-typu-klient-serwer"></> Omówienie struktury typu klient-serwer
+## <a name="omownie-struktury-typu-klient-serwer"></a> Omówienie struktury typu klient-serwer
 
 
 // ToDo: End this
