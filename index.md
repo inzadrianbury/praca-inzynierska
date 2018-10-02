@@ -9,7 +9,7 @@
     3. [STEP-NC](#step-nc)
     4. [NORMA ISO 14649](#norma-iso-14649)
     5. [NORMA ISO 14649 – CZĘŚĆ 201](#norma-iso-14649-czesc-201)
-4. PROJEKTOWANIE ARCHITEKTURY SYSTEMU APLIKACJI
+4. [PROJEKTOWANIE ARCHITEKTURY SYSTEMU APLIKACJI](#projektowanie-architektury-systemu-aplikacji)
     1. OMÓWIENIE STRUKTURY TYPU KLIENT - SERWER
     2. OMÓWIENIE PROTOKOŁU KOMUNIKACJI POMIĘDZY PRZEGLĄDARKĄ A SERWEREM - POŁĄCZENIE HTTP
     3. RODZAJE STRON INTERNETOWYCH
@@ -284,4 +284,44 @@ produkcyjnych w technologiach opisanych w ISO 14649.
 
 ## <a name="norma-iso-14649-czesc-201"></a> Norma ISO 14649 – część 201
 
-// ToDo
+Część 201 normy ISO 14649 jest odpowiedzialna za określenie danych technicznych
+obrabiarek wykorzystywanych w procesach skrawania. Norma ta składa się z:
+* opisu modelów poszczególnych encji składających się na daną normę
+* przedstawionych zależności poszczególnych encji w języku EXPRESS
+* przedstawionych zależności poszczególnych encji w języku EXPRESS-G
+* przykładów danych technicznych obrabiarek i danych dotyczących wymagań
+* obrabiarek dla różnych zastosowań
+
+Rdzeniem całego modelu owej normy jest encja „machine_tool”, która składa się z pola
+„description” typu „text”. Jednostki takie jak „machine_tool_requirements” oraz
+„machine_tool_specification” dziedziczą po jednostce „machine_tool”. Opisany powyżej
+fragment normy został przedstawiony w sposób graficzny na rys. 3-6 za pomocą języka
+EXPRESS-G, który obrazuje występujące relacje.
+
+![Fragment normy ISO 14649-201 przedstawiający rdzeń schematu „machine_tool” za pomocą języka EXPRESS-G [10]](./assets/images/fragment-normy-iso-14649-201-express-g.png)
+*rys. 3-6 Fragment normy ISO 14649-201 przedstawiający rdzeń schematu „machine_tool” za pomocą języka EXPRESS-G [10]*
+
+Cała norma składa się z pięćdziesięciu dziewięciu encji połączonych między sobą
+odpowiednimi relacjami oraz z siedemnastu zdefiniowanych typów, z czego dwanaście jest typem
+wyliczeniowym. Każda encja jest dokładnie opisana: zawiera zastosowanie danej encji wraz z
+objaśnieniem każdego z pól. Na rys. 3-7 został przedstawiony fragment normy ISO 14649-201
+objaśniający encję „machine_tool_specification” za pomocą języka EXPRESS wraz z opisem
+poszczególnych pól.
+
+Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól [10]
+
+![Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól [10]](./assets/images/fragment-normy-iso-14649-201-encja-machine-tool-specification-express-g.png)
+*rys. 3-7 Fragment normy ISO 14649-201 przedstawiający encję „machine_tool_specification” w języku EXPRESS wraz z opisem poszczególnych pól [10]*
+
+Zgodnie z wymaganiami postawionymi aplikacji, nie wszystkie encje zostały
+zaimplementowane. Wynika to z tego, że niektóre dane są bardzo specyficzne i przeznaczone dla
+bardzo wąskiej grupy przypadków. W tab. 3-1 zostały przedstawione, wraz z opisem, wszystkie
+encje, które zostały zaimplementowane w napisanej aplikacji.
+
+*tab. 3-1 Spis encji, które zostały zaimplementowane w napisanej aplikacji [10]*
+// ToDo: Paste table content
+
+
+# <a name="projektowanie-architektury-systemu-aplikacji"></a> Projektowanie architektury systemu aplikacji
+
+// ToDo: End this
