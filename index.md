@@ -19,7 +19,7 @@
     6. [PLANOWANIE API ZGODNIE Z ZASADAMI REST](#planowanie-api-zgodnie-z-zasadami-rest)
     7. [PROJEKTOWANIE API DLA SERWISU INTERNETOWEGO](#projektowanie-api-dla-serwisu-internetowego)
     8. [PROXY](#proxy)
-    9. [BAZA DANYCH](#bazy-danych)
+    9. [BAZA DANYCH](#baza-danych)
 5. IMPLEMENTACJA SERWISU INTERNETOWEGO
     1. OMÓWIENIE ŚRODOWISKA NODE.JS ORAZ FRAMEWORK'A EXPRESS.JS 
     2. OMÓWIENIE MENEDŻERA PAKIETÓW JS – NPM
