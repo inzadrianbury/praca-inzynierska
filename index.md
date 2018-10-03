@@ -12,14 +12,14 @@
     5. [NORMA ISO 14649 – CZĘŚĆ 201](#norma-iso-14649-czesc-201)
 4. [PROJEKTOWANIE ARCHITEKTURY SYSTEMU APLIKACJI](#projektowanie-architektury-systemu-aplikacji)
     1. [OMÓWIENIE STRUKTURY TYPU KLIENT - SERWER](#omownie-struktury-typu-klient-serwer)
-    2. OMÓWIENIE PROTOKOŁU KOMUNIKACJI POMIĘDZY PRZEGLĄDARKĄ A SERWEREM - POŁĄCZENIE HTTP
-    3. RODZAJE STRON INTERNETOWYCH
-    4. KOMUNIKACJA MIĘDZY APLIKACJAMI - API
-    5. ARCHITEKTURA API - REST
-    6. PLANOWANIE API ZGODNIE Z ZASADAMI REST
-    7. PROJEKTOWANIE API DLA SERWISU INTERNETOWEGO
-    8. PROXY 
-    9. BAZA DANYCH 
+    2. [OMÓWIENIE PROTOKOŁU KOMUNIKACJI POMIĘDZY PRZEGLĄDARKĄ A SERWEREM - POŁĄCZENIE HTTP](#omowienie-protokulu-komunikacji-pomiedzy-przegladarka-a-serwerem-polaczenie-http)
+    3. [RODZAJE STRON INTERNETOWYCH](#rodzaje-stron-internetowych)
+    4. [KOMUNIKACJA MIĘDZY APLIKACJAMI - API](#komunikacja-miedzy-aplikacjami-api)
+    5. [ARCHITEKTURA API - REST](#architektura-api-rest)
+    6. [PLANOWANIE API ZGODNIE Z ZASADAMI REST](#planowanie-api-zgodnie-z-zasadami-rest)
+    7. [PROJEKTOWANIE API DLA SERWISU INTERNETOWEGO](#projektowanie-api-dla-serwisu-internetowego)
+    8. [PROXY](#proxy)
+    9. [BAZA DANYCH](#bazy-danych)
 5. IMPLEMENTACJA SERWISU INTERNETOWEGO
     1. OMÓWIENIE ŚRODOWISKA NODE.JS ORAZ FRAMEWORK'A EXPRESS.JS 
     2. OMÓWIENIE MENEDŻERA PAKIETÓW JS – NPM
@@ -391,5 +391,326 @@ została przedstawiona na rys. 4-4.
 
 ## <a name="omownie-struktury-typu-klient-serwer"></a> Omówienie struktury typu klient-serwer
 
+Model klient-serwer jest to wzór architektury oprogramowania, który dzieli zadania
+między dostawców zasobów i usług, zwanych serwerami oraz wyzwalaczami usług, nazywanymi
+klientami. Często klienci i serwery komunikują się za pośrednictwem sieci komputerowej na
+oddzielnym sprzęcie, ale zarówno klient, jak i serwer mogą znajdować się w tym samym systemie.
+Host serwera uruchamia jeden lub więcej programów serwera, które udostępniają swoje zasoby
+klientom. Klient nie udostępnia żadnych zasobów, ale żąda funkcji lub usługi serwera . Klienci
+inicjują zatem sesje komunikacyjne z serwerami oczekującymi na przychodzące żądania [12].
 
-// ToDo: End this
+Architektura klient-serwer stała się jednym z podstawowych modeli obliczeniowych w
+sieci. Wiele typów aplikacji zostało napisanych przy użyciu modelu klient-serwer. Standardowe
+funkcje sieciowe, takie jak wymiana poczty e-mail, dostęp do sieci i dostęp do bazy danych, są
+oparte na modelu klient-serwer. Na przykład przeglądarka internetowa to program klienta na
+komputerze użytkownika, który może uzyskać dostęp do informacji na dowolnym serwerze
+WWW na świecie. Na rys. 4-5 został przedstawiony schemat sieci komputerowej, w której klienci
+komunikują się z serwerem za pośrednictwem Internetu.
+
+
+![Schemat sieci komputerowej klientów komunikujących się z serwerem za pośrednictwem Internetu w architekturze klient-serwer](./assets/images/schemat-klient-serwer.png)
+*rys. 4-5 Schemat sieci komputerowej klientów komunikujących się z serwerem za pośrednictwem Internetu w architekturze klient-serwer [źródło własne]*
+
+## <a name="omowienie-protokulu-komunikacji-pomiedzy-przegladarka-a-serwerem-polaczenie-http"></a> Omówienie protokołu komunikacji pomiędzy przeglądarką a serwerem - połączenie HTTP
+
+Żądanie-odpowiedź to wzorzec wymiany komunikatów, w którym jeden komputer
+wysyła komunikat żądania do systemu, który odbiera i przetwarza żądanie, ostatecznie zwracając
+wiadomość. Jest to prosty, ale potężny wzorzec przesyłania wiadomości, który pozwala dwóm 
+aplikacjom prowadzić dwukierunkową rozmowę ze sobą przez kanał komunikacyjny. Ten
+wzorzec jest szczególnie powszechny w architekturach klient-serwer.
+
+Dla przykładu, kiedy klient banku uzyskuje dostęp do usług bankowości internetowej za
+pomocą przeglądarki internetowej, jako klient inicjuje żądanie na serwer internetowy banku. Dane
+logowania klienta są przechowywane w bazie danych, więc serwer sieciowy uzyskuje dostęp do
+serwera bazy danych jako klient. Serwer aplikacji interpretuje zwrócone dane z bazy danych
+poprzez zastosowanie logiki biznesowej, po czym wreszcie serwer WWW zwraca wynik do
+przeglądarki klienta, w celu wyświetlenia danych. Na każdym etapie tej sekwencji wymiany
+komunikatów pomiędzy klientem a serwer komputer przetwarza żądanie i zwraca dane. Przepływ
+danych w wyżej podanym przykładzie został zobrazowany na rys. 4-6.
+
+![Schemat komunikacji typu żądanie-odpowiedź pomiędzy klientem, serwerem oraz bazą danych](./assets/images/komunikacja-zadanie-odpowiedz.png)
+*rys. 4-6 Schemat komunikacji typu żądanie-odpowiedź pomiędzy klientem, serwerem oraz bazą danych [źródło własne]*
+
+Dla uproszczenia wzorzec ten jest zwykle implementowany w sposób całkowicie
+synchroniczny, tak samo dzieje się w przypadku wywołań usług internetowych za pośrednictwem
+protokołu HTTP, który utrzymuje połączenie otwarte i czeka, aż odpowiedź zostanie dostarczona
+lub zawiesza działanie, gdy upłynie limit maksymalnego czasu oczekiwania na odpowiedź. Jednak
+komunikacja typu żądanie-odpowiedź może być również zaimplementowana asynchronicznie, a
+odpowiedź jest zwracana w nieznanym czasie.
+
+## <a name="rodzaje-stron-internetowych"></a> Rodzaje stron internetowych
+
+Strona internetowa jest do dokument, który został utworzony dla „sieci”, najczęściej o
+rozszerzeniu HTML. Oznacza to, że owy dokument może zostać „otworzony” za pomocą
+przeglądarki internetowej, której zadaniem jest odpowiednie wyświetlenie jego zawartości,
+zgodnie ze zdefiniowanymi przez programistę regułami, zawartymi w dokumencie. Dokument ten
+jest najczęściej przechowywany na komputerze podłączonym do Internetu (serwerze), z którym
+łączą się przeglądarki internetowe (najczęściej poprzez protokół http) w celu jego pobrania a
+następnie wyświetlenia jego zawartości. Proces ten został przedstawiony na rys. 4-7
+
+![Proces komunikacji z serwerem przez przeglądarkę internetową](./assets/images/komunikacja-serwer-przegladarka.png)
+*rys. 4-7 Proces komunikacji z serwerem przez przeglądarkę internetową [źródło własne]*
+
+Po wpisaniu nazwy domeny, w przeglądarce internetowej, przeglądarka wysyła żądanie
+do serwera na którym znajdują się pliki witryny. Przeglądarka pobiera te pliki, zwykle dokumenty
+HTML, i towarzyszące im obrazy lub filmy, po czym wyświetla je na ekranie. HTML i inne języki
+(CSS, JavaScript) używane do wyświetlania danych przez przeglądarkę internetową są zwykle
+określane jako technologie Front-End’owe [15].
+
+### <a name="tradycyjna-strona-internetowa"></a> Tradycyjna strona internetowa – MPA
+
+„Multiple Page Application” (MPA) jest to termin, który odnosi się do stron
+internetowych tworzonych w sposób „tradycyjny” [16]. Każde żądanie, wyświetlenie nowych
+danych lub wysłanie danych na serwer w celu ich przetworzenia lub zapisania, wiąże się z potrzebą
+wygenerowania a następnie wyświetlenia całej strony od nowa, co wiąże się z względnie długim
+czasem oczekiwania. Proces ten został przedstawiony na rys. 4-8.
+
+![Proces wyświetlania kolejnych podstrony witryny internetowej](./assets/images/proces-wyswietlania-strony-internetowej.png)
+*rys. 4-8 Proces wyświetlania kolejnych podstrony witryny internetowej [źródło własne]*
+
+Ze względu na to, że logika generowania dokumentów HTML jest umiejscowiona na
+serwerze, serwer ten oprócz docelowej logiki musi również mieć zaimplementowane
+funkcjonalności umożliwiające generowanie dokumentów HTML, co wiąże się z zużyciem
+dodatkowych zasobów serwera. Uproszczony proces przetwarzania żądania przez serwer w tego
+typu stronach internetowych został przedstawiony na rys. 4-9.
+
+![Uproszczony schemat przetwarzania żądania przez serwer w stronach internetowych typu MPA](schemat-przetwarzania-zadania.png)
+*rys. 4-9 Uproszczony schemat przetwarzania żądania przez serwer w stronach internetowych typu MPA [źródło własne]*
+
+### <a name="aplikacja-internetowa-spa"></a> Aplikacja internetowa - SPA
+
+Termin „Single Page Application” (SPA) jest zwykle używany do opisywania aplikacji,
+które zostały zbudowane dla „sieci”. Aplikacje te są dostępne za pośrednictwem przeglądarki
+internetowej, podobnie jak „tradycyjne” witryny internetowe, ale oferują bardziej dynamiczne
+interakcje przypominające natywne aplikacje mobilne i stacjonarne. Najbardziej zauważalną
+różnicą między witryną tradycyjną, a SPA jest zmniejszona ilość pełnych przeładowań strony.
+SPA mają większe wykorzystanie zapytań AJAX (Asynchronous JavaScript And XML), czyli
+sposobu na komunikację z serwerem bez konieczności pełnego odświeżania strony w celu
+pobrania danych oraz aktualizacji widoku w aplikacji [17]. rys. 4-10 przedstawia uproszczony
+schemat komunikacji pomiędzy przeglądarką a serwerem, gdy dostarczona strona internetowa jest
+aplikacją internetową.
+
+
+![Sposób komunikacji pomiędzy SPA a serwerem](./assets/images/komunikacja-spa-serwer.png)
+*rys. 4-10 Sposób komunikacji pomiędzy SPA a serwerem [źródło własne]*
+
+Po pobraniu całej przesłanej aplikacji internetowej i uruchomieniu jej przez przeglądarkę
+(kroki 1-5), aplikacja wysyła żądanie na serwer w celu pobrania odpowiednich danych. Gdy dane
+zostaną już dostarczone, aplikacja wygeneruje odpowiednie podstrony (kroki 6-10). Jeżeli dane
+ulegną zmianie, nie ma potrzeby pobierania całej aplikacji od nowa (tak jak ma to miejsce w
+MPA), wystarczy, że zostanie ponownie zainicjowane żądanie pobrania danych z serwera (kroki
+6-10).
+
+Ze względu na to, że cała logika generowania podstron witryny została przeniesiona na
+aplikację (przeglądarkę), nie ma potrzeby implementowania warstwy logiki odpowiedzialnej za
+generowanie dokumentów HTML na serwerze. W związku z tym proces przetwarzania żądania
+przez serwer przechowywujący dane zostanie znacznie uproszczony (rys. 4-11).
+
+![Uproszczony schemat przetwarzania żądania przez serwer bez warstwy logiki odpowiedzialnej za generowanie dokumentów HTML](./assets/images/schemat-przetwarzania-zadania-w-spa.png)
+*rys. 4-11 Uproszczony schemat przetwarzania żądania przez serwer bez warstwy logiki odpowiedzialnej za generowanie dokumentów HTML [źródło własne]*
+
+Budowanie stron internetowych typu SPA stało się w ostatnim czasie bardzo popularne i
+obecnie jest uważane za nowoczesną praktykę rozwojową. Jednak każde rozwiązanie posiada
+wady, które zawsze należy uwzględnić podczas podejmowania decyzji na budowanie aplikacji
+tego typu. Z powodu, że przeglądarka wykonuje większość operacji, takich jak na przykład
+dynamiczne generowanie widoków, powoduje to, że w urządzeniach o małej mocy obliczeniowej,
+wydajność takich aplikacji może stanowić poważny problem. Dodatkowo, takie strony są bardzo
+ciężkie do analizy przez boty internetowe, przez co wyszukiwarki internetowe mogą niewłaściwie
+interpretować treści znajdujące się na stronie [17].
+
+Aplikacje typu SPA powinny być przede wszystkim wykorzystywane podczas tworzenia
+zaawansowanych aplikacji, w których ważniejsze jest zapewnienie dużej ilości funkcji i logiki niż
+statycznych stron z dużą ilością tekstu. Stąd SPA doskonale sprawdzą się w sytuacjach takich jak
+aplikacje bankowe, panele administracyjne, zaawansowane kalkulatory i aplikacje przetwarzające
+rozbudowane formularze HTML. Natomiast totalnie nie sprawdzą się na blogach, serwisach
+informacyjnych i innych stronach z dużą ilością tekstu i artykułów [18].
+
+Im więcej interaktywności ma miejsce po stronie klienta, tym więcej kodu JavaScript jest
+potrzebne, aby te interaktywne elementy obsłużyć. Im więcej kodu jest napisane, tym ważniejsze
+jest posiadanie czystej i dobrze zaprojektowanej bazy kodu, przez co programiści nieustanie
+pracują nad tworzeniem i ulepszaniem narzędzi, dzięki którym tworzenie SPA staje się szybsze i
+przyjemniejsze [17]. Istnieje wiele szkieletów aplikacji JavaScript o otwartym kodzie źródłowym,
+które pomagają w budowaniu tego typu aplikacji, jakich jak np.: Angular, React, Vue.js, Backbone
+[19].
+
+## <a name="komunikacja-miedzy-aplikacjami-api"></a> Komunikacja między aplikacjami - API
+
+Aby się komunikować, komputery muszą korzystać ze wspólnego języka i przestrzegać
+reguł, aby zarówno klient, jak i serwer wiedzieli, czego się spodziewać. Język i zasady
+komunikacji są zdefiniowane w protokole komunikacyjnym. Wszystkie protokoły klient-serwer
+działają w warstwie aplikacji. Protokół warstwy aplikacji określa podstawowe wzorce dialogu.
+Aby jeszcze bardziej sformalizować wymianę danych, serwer może zaimplementować interfejs
+aplikacji (API). API jest warstwą abstrakcji do uzyskiwania dostępu do usługi. Ograniczając
+komunikację do określonego formatu zawartości, ułatwia to przetwarzanie.
+
+W programowaniu komputerowym, API (Application Programming Interface) jest
+zbiorem podprogramów, definicji, protokołów i narzędzi do tworzenia oprogramowania. Jest to
+zbiór jasno określonych metod komunikacji między różnymi komponentami oprogramowania.
+Dobre API ułatwia tworzenie programów komputerowych poprzez dostarczanie wszystkich
+elementów składowych, które następnie są zestawiane przez programistę. API może zostać
+napisane dla systemu internetowego, systemu operacyjnego, systemu baz danych, sprzętu
+komputerowego lub bibliotek oprogramowania. Na przykład jeśli firma programistyczna
+zamierza utworzyć edytor tekstu działający w systemie Microsoft Windows, twórcy tego edytora
+tekstu wykorzystają różne funkcje wbudowane w system Windows, zamiast próbować napisać te
+funkcje od nowa. W tym kontekście Microsoft zapewnił API jako środek dostępu do usługi
+okienkowania w systemie operacyjnym Windows, a twórcy tysięcy aplikacji działających w tym
+systemie „skonsumowali” tę usługę za pośrednictwem interfejsu API. Deweloperzy nie musieli
+pisać kodu, aby narysować pasek tytułu okna, ani nie musieli pisać funkcji do zmiany rozmiaru
+okna, zamiast tego, funkcje te zostały odziedziczone przez każde okno utworzone za pomocą
+interfejsu API znajdującego się w samym systemie Microsoft Windows [20].
+
+API nie są ograniczone jedynie do systemu Windows, ani też nie są ograniczone do
+systemu, który jest obecnie używany na urządzeniu. API, na przykład, może zostać stworzone na
+serwerach www, które umożliwi dostęp do konkretnych informacji z witryny.
+
+## <a name="architektura-api-rest"></a> Architektura API - REST
+
+REST jest to akronim od słów REpresentational State Transfer. REST to styl
+architektoniczny zapewniający standardy między systemami komputerowymi w sieci, w celu
+ułatwienia systemom komunikowanie się między sobą [21]. Aby daną architekturę można było
+nazwać architekturą REST’ową musi ona spełniać pięć następujących ograniczeń [22]:
+
+* Architektura jest typu klient-serwer
+
+W architekturze REST zawsze jest klient i serwer, gdzie komunikacja jest zawsze
+inicjowana przez klienta. Klient i serwer są oddzielone od siebie jednolitym interfejsem, dzięki
+czemu zarówno klient, jak i serwer rozwijają się niezależnie.
+
+* System jest bezstanowy
+
+Każde żądanie od dowolnego klienta zawiera wszystkie informacje niezbędne do obsługi
+żądania, a stan sesji jest przechowywany w kliencie. Stan sesji może być przeniesiony przez serwer
+do innej usługi, takiej jak baza danych, w celu utrzymania trwałego stanu przez pewien okres i
+umożliwienia uwierzytelnienia. Klient rozpoczyna wysyłanie żądań, gdy jest gotowy do przejścia
+do nowego stanu.
+
+* Wykorzystywanie pamięci podręcznej
+
+Klienci i pośrednicy mogą buforować odpowiedzi, odpowiedzi zatem muszą, pośrednio
+lub bezpośrednio, określać się jako buforowane lub nie, aby uniemożliwić klientom ponowne
+wykorzystanie nieaktualnych lub niewłaściwych danych w odpowiedzi na kolejne żądania. Dobrze
+zarządzane buforowanie częściowo lub całkowicie eliminuje niektóre interakcje klient-serwer,
+dodatkowo poprawiając skalowalność i wydajność.
+
+* System jest systemem warstwowym
+
+System warstwowy jest systemem, w którym komponenty są grupowane (warstwowane)
+w układzie hierarchicznym tak, że niższe warstwy zapewniają funkcje i usługi, które obsługują
+wyższe warstwy. Systemy o coraz większej złożoności i możliwościach można rozbudować,
+dodając lub zmieniając warstwy, aby poprawić ogólne możliwości systemu.
+
+* Jednolity interfejs
+
+Interfejs jest jednolity dla wszystkich aplikacji. Oznacza to, że informacje przesyłane są
+w ustandaryzowanej formie, a nie w zależności od potrzeb konkretnej aplikacji. Interfejs REST
+został opracowany z myślą o wydajnym transferze danych o dużej ziarnistości, optymalizując go
+pod kątem wspólnego przypadku w sieci, w wyniku czego interfejs nie jest optymalny dla innych
+form interakcji architektonicznych.
+
+## <a name="planowanie-api-zgodnie-z-zasadami-rest"></a> Planowanie API zgodnie z zasadami REST
+
+API serwisu internetowego jest to interfejs, który składa się z co najmniej z jednego
+„punktu końcowego” (URI), który jest ukierunkowany na system wiadomości typu żądanie-
+odpowiedź. Dane zwykle są wyrażone w formacie JSON lub XML, który jest przesyłany za
+pośrednictwem Internetu, najczęściej za pomocą HTTP (REST API może zostać również
+zaimplementowane dla innych protokołów) [23].
+
+Punkty końcowe są ważnymi aspektami interakcji z internetowymi API po stronie
+serwera, ponieważ określają, gdzie znajdują się zasoby dostępne dla oprogramowania stron
+trzecich (klientów). Dostęp odbywa się za pośrednictwem identyfikatora URI, do którego są
+wysyłane żądania HTTP i od którego oczekuje się odpowiedzi. Punkty końcowe muszą być
+statyczne, w przeciwnym razie nie można zagwarantować prawidłowego działania
+oprogramowania, które z nimi współdziała. Jeśli lokalizacja zasobu ulegnie zmianie (a wraz z nim
+punkt końcowy), wówczas uprzednio napisane oprogramowanie przestanie działać poprawnie,
+ponieważ wymagany zasób nie będzie już dostępny pod danym identyfikatorem. tab. 4-1 pokazuje
+najczęściej projektowane API z wykorzystaniem metody http zgodne z architekturą REST.
+
+*tab. 4-1 Przykład najczęściej projektowanego API dla HTTP zgodnego z zasadami REST*
+// ToDo: Add table with most popular API
+
+## <a name="projektowanie-api-dla-serwisu-internetowego"></a> Projektowanie API dla serwisu internetowego
+
+W zaprojektowanym systemie (opisanym powyżej) będzie następowała komunikacja
+pomiędzy aplikacją kliencką oraz serwerem. W związku z tym należy zaprojektować sposób
+komunikacji pomiędzy tymi aplikacjami. W tym celu zostało zaprojektowanego API, które
+zostanie zaimplementowane przez serwis internetowy. Zaprojektowanie API zostało
+przedstawione w tab. 4-2. Jako format danych został wybrany format JSON ze względu na jego
+bardzo dużą popularność oraz łatwość implementacji.
+
+*tab. 4-2 Tabela przedstawia zaprojektowane API dla serwisu internetowego*
+// ToDo: Add table with designed API 
+
+## <a name="proxy"></a> Proxy
+
+W sieciach komputerowych, serwer proxy jest to serwer pośredniczący, który działa jako
+pośrednik pomiędzy różnymi serwerami, przekazując żądania. Klient łączy się z serwerem proxy,
+żądając usługi, takiej jak na przykład pobranie pliku, strony internetowej, wykonanie jakieś
+operacji lub jakikolwiek inny zasób dostępny z innego serwera. Następnie serwer proxy pyta
+serwer docelowy o zasób, po czym zwraca odpowiedź z powrotem do klienta [24].
+
+Wyróżnia się dwa główne podziały serwera proxy ze względu na sposób przekazywania
+zasobów: proxy otwarte oraz odwrócone (z ang. „reverse”). Proxy otwarte jest to proxy, do którego
+każdy klient połączony z siecią ma dostęp do owego serwera, za pomocą którego może łączyć się
+z dowolnym innym serwerem [24]. Na rys. 4-12 został przedstawiony graficzny zapis sposobu
+działania otwartego serwera proxy.
+
+![Zasada działania otwartego serwera proxy](./assets/images/otwarte-proxy.png)
+*rys. 4-12 Zasada działania otwartego serwera proxy [źródło własne]*
+
+Natomiast odwrotny serwer proxy to serwer, który wydaje się klientom, że jest
+„zwykłym” serwerem, ponieważ odpowiedź z serwera proxy jest zwracana tak, jakby pochodziła
+bezpośrednio z oryginalnego serwera, pozostawiając klienta bez znajomości serwerów
+źródłowych [24]. Na rys. 4-13 został graficznie przedstawiony sposób działania przykładowego
+odwróconego serwera proxy.
+
+![Przykład działania odwróconego serwera proxy](./assets/images/odwrocone-proxy.png)
+rys. 4-13 Przykład działania odwróconego serwera proxy [źródło własne]
+
+## <a name="baza-danych"></a> Baza danych
+
+Baza danych to abstrakcja systemu plików systemu operacyjnego, która ułatwia
+programistom tworzenie aplikacji, które tworzą, odczytują, aktualizują i usuwają trwałe dane.
+Bazy danych sprawiają, że zorganizowana pamięć masowa jest niezawodna i szybka [25]. Dwa
+najpopularniejsze rodzaje baz danych to bazy relacyjne (SQL) oraz nierelacyjne (NoSQL) [26].
+
+W relacyjnych bazach danych wszystkie dane są przechowywane w relacjach (tabelach),
+a każda relacja składa się z wierszy i kolumn. Ważną cechą modelu relacyjnego jest wykorzystanie
+kluczy. Są to specjalnie wyznaczone kolumny w relacji, służące do porządkowania danych lub
+powiązania danych z innymi relacjami. Jednym z najważniejszych kluczy jest klucz podstawowy,
+który służy do jednoznacznej identyfikacji każdego wiersza danych. Klucz obcy jest unikalną
+referencją odnoszącą się do danych w jednej relacji z kluczem podstawowym innej relacji [27].
+
+Relacyjne bazy danych wymagają zdefiniowania schematów przed dodaniem danych.
+Oznacza to, że w celu przechowania danych, baza danych SQL musi z góry wiedzieć, co będzie
+przechowywać. Jeśli baza danych jest duża, jest to bardzo powolny proces, który wymaga
+znacznych przestojów. Jeśli często następuje zmiana danych, które przechowuje aplikacja, przestój
+ten może być niewskazany. Nie ma również możliwości, za pomocą relacyjnej bazy danych,
+efektywnego adresowania danych, które są całkowicie nieuporządkowane lub z góry nieznane.
+Oprócz zdefiniowania struktury danych, model relacyjny ustanawia także zestaw zasad
+wymuszających integralność danych, znanych jako ograniczenia integralności. Określa również
+sposób manipulowania danymi. Ponadto model definiuje specjalną cechę zwaną normalizacją w
+celu zapewnienia wydajnego przechowywania danych [27].
+
+Bazy danych NoSQL zostały zbudowane w celu umożliwienia wstawiania danych bez
+wstępnie zdefiniowanego schematu. Ułatwia to wprowadzanie istotnych zmian w aplikacji w
+czasie rzeczywistym, bez martwienia się o przerwy w świadczeniu usług - co oznacza, że
+tworzenie jest szybsze, integracja kodu jest bardziej niezawodna i potrzeba mniej czasu
+administratora bazy danych. Programiści zwykle muszą dodać kod po stronie aplikacji, aby
+wymusić kontrolę jakości danych, na przykład nakazując obecność określonych pól, typów danych
+lub dopuszczalnych wartości. Bardziej wyrafinowane bazy danych NoSQL umożliwiają
+stosowanie zasad sprawdzania poprawności w bazie danych, co pozwala użytkownikom
+wymuszać zarządzanie danymi, przy jednoczesnym zachowaniu korzyści płynących ze stosowania
+dynamicznego schematu [28].
+
+W tab. 4-3 zostały wyszczególnione główne różnice pomiędzy opisywanymi bazami danych.
+
+*tab. 4-3 Porównanie relacyjnych baz danych z bazami nierelacyjnymi [29]*
+// ToDo: Add table with differences between SQL and NoSQL
+
+W niniejszej pracy do zapisywania danych została wykorzystana nierelacyjna baza
+danych – MongoDB. Baza ta idealnie sprawdzi się w zaprojektowanej aplikacji ze względu na
+możliwość zapisu danych w formacie BSON oraz jej dynamiczny schemat. Dzięki temu, że
+MongoDB jest popularne wśród programistów, istnieje mnóstwo bibliotek o otwartym kodzie
+źródłowym, które znacząco ułatwią wykonywania operacji na niniejszej bazie.
+
+# 5.
