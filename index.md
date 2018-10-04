@@ -20,12 +20,12 @@
     7. [PROJEKTOWANIE API DLA SERWISU INTERNETOWEGO](#projektowanie-api-dla-serwisu-internetowego)
     8. [PROXY](#proxy)
     9. [BAZA DANYCH](#baza-danych)
-5. IMPLEMENTACJA SERWISU INTERNETOWEGO
-    1. OMÓWIENIE ŚRODOWISKA NODE.JS ORAZ FRAMEWORK'A EXPRESS.JS 
-    2. OMÓWIENIE MENEDŻERA PAKIETÓW JS – NPM
-    3. ZAPROJEKTOWANIE ARCHITEKTURY SERWISU 
-    4. PLIK KONFIGURACYJNY
-    5. MONGOOSE – BIBLIOTEKA DO ZARZĄDZANIE BAZĄ DANYCH M ONGO DB
+5. [IMPLEMENTACJA SERWISU INTERNETOWEGO](#implementacja-serwisu-internetowego)
+    1. [OMÓWIENIE ŚRODOWISKA NODE.JS ORAZ FRAMEWORK'A EXPRESS.JS](#omowienie-srodowiska-nodejs-oraz-frameworka-expressjs)
+    2. [OMÓWIENIE MENEDŻERA PAKIETÓW JS – NPM](#omowienie-menedzera-pakietow-js-npm)
+    3. [ZAPROJEKTOWANIE ARCHITEKTURY SERWISU](#zaprojektowanie-architektury-serwisu)
+    4. [PLIK KONFIGURACYJNY](#plik-konfiguracyjny)
+    5. [MONGOOSE – BIBLIOTEKA DO ZARZĄDZANIE BAZĄ DANYCH M ONGO DB](#mongoose-biblioteka-do-zarzadzanie-baza-danych-mongodb)
     6. TWORZENIE SERWISÓW
     7. TWORZENIE KONTROLERÓW
     8. UWIERZYTELNIENIE UŻYTKOWNIKA
@@ -681,7 +681,7 @@ najczęściej projektowane API z wykorzystaniem metody http zgodne z architektur
 | Utworzenie nowego elementu kolekcji     	| POST        	| /kolekcja/               	|
 | Podmiana elementu kolekcji              	| PUT         	| /kolekcja/identyfikator/ 	|
 | Edycja elementu kolekcji                	| PATCH       	| /kolekcja/identyfikator/ 	|
-| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|
+| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|:
 
 ## <a name="projektowanie-api-dla-serwisu-internetowego"></a> Projektowanie API dla serwisu internetowego
 
@@ -783,4 +783,160 @@ możliwość zapisu danych w formacie BSON oraz jej dynamiczny schemat. Dzięki 
 MongoDB jest popularne wśród programistów, istnieje mnóstwo bibliotek o otwartym kodzie
 źródłowym, które znacząco ułatwią wykonywania operacji na niniejszej bazie.
 
-# 5.
+# <a name="implementacja-serwisu-internetowego"></a> Implementacja serwisu internetowego
+
+## <a name="omowienie-srodowiska-nodejs-oraz-frameworka-expressjs"></a> Omówienie środowiska Node.js oraz framework’a Express.js
+
+Node.js jest to „open-source”, „cross-platform” JavaScript’owe środowisko służące do
+wykonywania kodu JavaScript po stronie serwera. Z historycznego punktu widzenia JavaScript
+był używany głównie do obsługi skryptów po stronie klienta (przeglądarki) na stronach
+internetowych, przetwarzanych przez silnik JavaScript’owy w przeglądarce użytkownika.
+Natomiast Node.js umożliwił uruchamiania plików JavaScript po stronie serwera. W związku z
+tym Node.js stał się jednym z podstawowych elementów paradygmatu „JavaScript wszędzie”,
+umożliwiając tworzenie aplikacji internetowych korzystając tylko z jednego języka
+programowania, zamiast polegać na różnych językach do pisania skryptów po stronie serwera i
+klienta [30].
+
+Chociaż „.js” jest to konwencjonalne rozszerzenie pliku dla kodu JavaScript, nazwa
+„Node.js” nie odnosi się do konkretnego pliku w tym kontekście i jest jedynie nazwą produktu.
+Node.js ma architekturę sterowaną zdarzeniami, zdolną do asynchronicznych operacji
+wejść/wyjść. Te wybory projektowe mają na celu optymalizację przepustowości i skalowalności
+w aplikacjach internetowych z wieloma operacjami wejścia/wyjścia, a także w aplikacjach
+internetowych działających w czasie rzeczywistym (np. programy komunikacyjne w czasie
+rzeczywistym i gry przeglądarkowe) [31].
+
+Natomiast Express.js to minimalny i bardzo elastyczny framework, napisany w Node.js
+do łatwiejszego tworzenia aplikacji internetowych. Narzędzie to, dzięki zapewnieniu bogatej ilości
+zestawu gotowych funkcji znaczenie przyśpiesza tworzenie złożonych operacji biznesowych.
+Przykład minimalistycznej aplikacji napisanej z wykorzystaniem Express.js został przedstawiony
+na rys. 5-1.
+
+```
+// import biblioteki
+const express = require(‘express’);
+// utworzenie nowej instancji aplikacji express
+const app = express();
+// zdefiniowanie adresu
+app.get(‘/’, (req, res) => res.send(‘Hello World!’));
+// uruchomienie serwera na porcie 3000
+app.listen(3000, () =>
+      console.log(‘Example app listening on port 3000!’));
+```
+*rys. 5-1 Przykład prostej aplikacji napisanej z wykorzystaniem Express.js*
+
+Aby uruchomić napisany kod, należy go zapisać do pliku „app.js” (nazwa ta jest tylko
+przykładowa) i zainstalować wymagane biblioteki, wpisując w wierszu poleceń odpowiednie
+komendy, tak jak pokazano na rys. 5-2. W celu sprawdzenia czy aplikacji działa poprawnie należy
+przejść na stronę http://localhost:3000/.
+
+```
+# zainstalowanie globalnie biblioteki express
+$ npm install -g express
+# uruchomienie aplikacji
+$ node app.js
+```
+*rys. 5-2 Komendy do instalacji oraz uruchomienia aplikacji napisanej w Express.js*
+
+## <a name="omowienie-menedzera-pakietow-js-npm"></a> Omówienie menedżera pakietów JS – NPM
+
+NPM to menedżer pakietów dla języka JavaScript. Jest to domyślny menedżer dla
+środowiska wykonawczego Node.js. Oznacza to, że po pobraniu oraz zainstalowaniu Node.js
+automatycznie instaluje się również npm [32].
+
+Najlepszym sposobem na zarządzanie zainstalowanymi lokalnie pakietami npm jest
+utworzenie pliku „package.json”. Plik ten, o z góry zdefiniowanej strukturze, zawiera listę
+pakietów, których wymaga projekt wraz z odpowiednią wersją. Takie działanie sprawia, że
+instalacja wymaganych pakietów jest całkowicie automatyczna oraz odtwarzalna. Na rys. 5-3
+została przedstawiona zawartość pliku „package.json” z listą wymaganych bibliotek oraz
+dostępnych skryptów dla aplikacji backend’owej, napisanej na potrzeby owej pracy.
+
+```
+{
+    "name": "inz-core",
+    "version": "2.0.0",
+    "scripts": {
+        "start": "npm run start-dev",
+        "start-prod": "NODE_CONFIG_ENV=production && node src/bin/www.js",
+        "start-dev":"NODE_CONFIG_ENV=development && nodemon -x src/bin/www.js"
+    },
+    "dependencies": {
+        "body-parser": "~1.18.2",
+        "boom": "^7.2.0",
+        "config": "^1.30.0",
+        # (...) pozostałe bibloteki
+    },
+        "devDependencies": {
+        "nodemon": "^1.14.12"
+    }
+}
+```
+*rys. 5-3 Zawartość pliku „package.json” dla aplikacji back-end’owej*
+
+Menedżer npm może automatycznie zarządzać plikiem „package.json” poprzez
+odpowiednie komendy. Najważniejsze z nich zostały przedstawiony na rys. 5-4.
+
+```
+$ cd /sciezka/do/projektu
+
+# automatyczne generowanie pliku „package.json”
+# z domyślnie skonfigurowaną treścią
+$ npm init -y
+
+# komenda instalująca bibliotekę
+# argument „—save” oznacza, że biblioteka zostanie
+# dopisana do pliku „package.json” w polu „dependencies”
+$ npm install nazwa_biblioteki—save
+
+# instalacja pakietów zdefiniowanych w „package.json”
+$ npm install
+
+# komenda do uruchamienia skryptów zdefiniowanych w „package.json”
+# w miejsce „nazwa_skryptu” należy podać nazwę skryptu
+# zdefiniowane skrypty: start, start-dev, start-prod
+$ npm run nazwa_skryptu
+```
+*rys. 5-4 Lista podstawowych komend dostępnych w npm*
+
+## <a name="zaprojektowanie-architektury-serwisu"></a> Zaprojektowanie architektury serwisu
+
+Aplikacja umożliwia użytkownikom końcowym komunikację z serwisem po HTTP.
+Dodatkowo aplikacja, do zapisu danych, korzysta z bazy danych. W związku z powyższym
+aplikacja została podzielona na trzy logiczne warstwy:
+* Kontrolery - zadaniem kontrolera jest odczytanie wiadomości wysłanej przez HTTP oraz uruchomienie odpowiedniej logiki biznesowej dostępnej w serwisie
+* Serwisy – serwis dostarcza zestaw funkcjonalności, które realizują logikę biznesową np.: zapisanie lub pobranie odpowiednich danych z bazy
+* Modele – model ma za zadanie zapewnić komunikację pomiędzy aplikacją a bazą danych z możliwością wykonywania operacji bazodanowych, w tym również walidację modelu
+
+Opisane warstwy zostały, w sposób graficzny, przedstawione na rys. 5-5.
+
+![Zaprojektowane warstwy w serwisie internetowym](./assets/images/zaprojektowane-warstwy.png)
+*rys. 5-5 Zaprojektowane warstwy w serwisie internetowym [źródło własne]*
+
+# <a name="plik-konfiguracyjny"></a> Plik konfiguracyjny
+
+Plik konfiguracyjny służy do zdefiniowana parametrów działania niektórych funkcji w
+aplikacji, takie ja na przykład: dane do łączenia się z bazą danych lub dane uwierzytelniające. Do
+obsługi plików konfiguracyjnych została wykorzystana biblioteka „node-config”. W pracy zostały
+zdefiniowane dwa pliki konfiguracyjnego: dla wersji deweloperskiej oraz produkcyjnej.
+Zawartość pliku konfiguracyjnego dla wersji produkcyjnej została przedstawiona na rys. 5-6.
+
+```
+// wartość zmiennych jest pobierana ze zmiennych środowiskowych
+// poprzez pobranie wartości obiektu
+// process.env[‘nazwa_zmiennej_srodowiskowej’]
+module.exports = {
+    auth: {
+        user:     process.env['AUTH_USER'],
+        password: process.env['AUTH_PASSWORD']
+    },
+    database: {
+        host: process.env['DB_HOST'],
+        name: process.env['DB_NAME']
+    },
+    logger: {
+        level: 'info'
+    }
+};
+```
+*rys. 5-6 Zawartość pliku konfiguracyjnego dla wersji produkcyjnej*
+
+## <a name="mongoose-biblioteka-do-zarzadzanie-baza-danych-mongodb"></a>Mongoose – biblioteka do zarządzanie bazą danych MongoDB
