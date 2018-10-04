@@ -673,7 +673,15 @@ ponieważ wymagany zasób nie będzie już dostępny pod danym identyfikatorem. 
 najczęściej projektowane API z wykorzystaniem metody http zgodne z architekturą REST.
 
 *tab. 4-1 Przykład najczęściej projektowanego API dla HTTP zgodnego z zasadami REST*
-// ToDo: Add table with most popular API
+
+| Akcja                                   	| Metoda HTTP 	| URI                      	|
+|-----------------------------------------	|-------------	|--------------------------	|
+| Pobranie całej kolekcji                 	| GET         	| /kolekcja/               	|
+| Pobranie pojedynczego elementu kolekcji 	| GET         	| /kolekcja/identyfikator/ 	|
+| Utworzenie nowego elementu kolekcji     	| POST        	| /kolekcja/               	|
+| Podmiana elementu kolekcji              	| PUT         	| /kolekcja/identyfikator/ 	|
+| Edycja elementu kolekcji                	| PATCH       	| /kolekcja/identyfikator/ 	|
+| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|
 
 ## <a name="projektowanie-api-dla-serwisu-internetowego"></a> Projektowanie API dla serwisu internetowego
 
@@ -686,14 +694,21 @@ bardzo dużą popularność oraz łatwość implementacji.
 
 *tab. 4-2 Tabela przedstawia zaprojektowane API dla serwisu internetowego*
 
-| Akcja                                   	| Metoda HTTP 	| URI                      	|
-|-----------------------------------------	|-------------	|--------------------------	|
-| Pobranie całej kolekcji                 	| GET         	| /kolekcja/               	|
-| Pobranie pojedynczego elementu kolekcji 	| GET         	| /kolekcja/identyfikator/ 	|
-| Utworzenie nowego elementu kolekcji     	| POST        	| /kolekcja/               	|
-| Podmiana elementu kolekcji              	| PUT         	| /kolekcja/identyfikator/ 	|
-| Edycja elementu kolekcji                	| PATCH       	| /kolekcja/identyfikator/ 	|
-| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|
+| Żądanie 	| URI                                 	| Ładunek                                            	| Odpowiedź                                       	|
+|---------	|-------------------------------------	|----------------------------------------------------	|-------------------------------------------------	|
+| GET     	| /folders/                           	| -                                                  	| Drzewiasta  struktura folderów                  	|
+| POST    	| /folders/                           	| Dane potrzebne do utworzenia folderu               	| Utworzony folder                                	|
+| PUT     	| /folders/{folderId}/                	| Dane potrzebne do zaktualizowania podanego folderu 	| Zaktualizowany folder                           	|
+| DELETE  	| /folders/{folderId}/                	| -                                                  	| Usunięty folder                                 	|
+| GET     	| /forms/                             	| Kryteria formularza (opcjonalnie)                  	| Wszystkie formularze spełniające dane kryterium 	|
+| POST    	| /forms/                             	| Dane potrzebne do utworzenia formularza            	| Utworzony formularz                             	|
+| GET     	| /forms/{formId}/                    	| -                                                  	| Wybrany formularz                               	|
+| GET     	| /forms/{formId}/inputs/             	| -                                                  	| Pobranie pól danego formularza                  	|
+| GET     	| /forms/{formId}/records/            	| -                                                  	| Pobranie rekordów danego formularza             	|
+| GET     	| /forms/{formId}/records/{recordId}/ 	| -                                                  	| Pobranie podanego rekordu z formularza          	|
+| POST    	| /forms/{formId}/records/            	| Dane potrzebne do utworzenia rekordu               	| Utworzony rekord                                	|
+| PUT     	| /forms/{formId}/records/{recordId}/ 	| Dane potrzebne do zaktualizowania podanego rekordu 	| Zaktualizowany rekord danego formularza         	|
+| DELETE  	| /forms/{formId}/records/{recordId}/ 	| -                                                  	| Usunięcie danego rekordu                        	|
 
 ## <a name="proxy"></a> Proxy
 
@@ -760,22 +775,7 @@ dynamicznego schematu [28].
 W tab. 4-3 zostały wyszczególnione główne różnice pomiędzy opisywanymi bazami danych.
 
 *tab. 4-3 Porównanie relacyjnych baz danych z bazami nierelacyjnymi [29]*
-
-| Żądanie 	| URI                                 	| Ładunek                                            	| Odpowiedź                                       	|
-|---------	|-------------------------------------	|----------------------------------------------------	|-------------------------------------------------	|
-| GET     	| /folders/                           	| -                                                  	| Drzewiasta  struktura folderów                  	|
-| POST    	| /folders/                           	| Dane potrzebne do utworzenia folderu               	| Utworzony folder                                	|
-| PUT     	| /folders/{folderId}/                	| Dane potrzebne do zaktualizowania podanego folderu 	| Zaktualizowany folder                           	|
-| DELETE  	| /folders/{folderId}/                	| -                                                  	| Usunięty folder                                 	|
-| GET     	| /forms/                             	| Kryteria formularza (opcjonalnie)                  	| Wszystkie formularze spełniające dane kryterium 	|
-| POST    	| /forms/                             	| Dane potrzebne do utworzenia formularza            	| Utworzony formularz                             	|
-| GET     	| /forms/{formId}/                    	| -                                                  	| Wybrany formularz                               	|
-| GET     	| /forms/{formId}/inputs/             	| -                                                  	| Pobranie pól danego formularza                  	|
-| GET     	| /forms/{formId}/records/            	| -                                                  	| Pobranie rekordów danego formularza             	|
-| GET     	| /forms/{formId}/records/{recordId}/ 	| -                                                  	| Pobranie podanego rekordu z formularza          	|
-| POST    	| /forms/{formId}/records/            	| Dane potrzebne do utworzenia rekordu               	| Utworzony rekord                                	|
-| PUT     	| /forms/{formId}/records/{recordId}/ 	| Dane potrzebne do zaktualizowania podanego rekordu 	| Zaktualizowany rekord danego formularza         	|
-| DELETE  	| /forms/{formId}/records/{recordId}/ 	| -                                                  	| Usunięcie danego rekordu                        	|
+// ToDO: Add table
 
 W niniejszej pracy do zapisywania danych została wykorzystana nierelacyjna baza
 danych – MongoDB. Baza ta idealnie sprawdzi się w zaprojektowanej aplikacji ze względu na
