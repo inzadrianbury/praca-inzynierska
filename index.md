@@ -760,7 +760,22 @@ dynamicznego schematu [28].
 W tab. 4-3 zostały wyszczególnione główne różnice pomiędzy opisywanymi bazami danych.
 
 *tab. 4-3 Porównanie relacyjnych baz danych z bazami nierelacyjnymi [29]*
-// ToDo: Add table with differences between SQL and NoSQL
+
+| Żądanie 	| URI                                 	| Ładunek                                            	| Odpowiedź                                       	|
+|---------	|-------------------------------------	|----------------------------------------------------	|-------------------------------------------------	|
+| GET     	| /folders/                           	| -                                                  	| Drzewiasta  struktura folderów                  	|
+| POST    	| /folders/                           	| Dane potrzebne do utworzenia folderu               	| Utworzony folder                                	|
+| PUT     	| /folders/{folderId}/                	| Dane potrzebne do zaktualizowania podanego folderu 	| Zaktualizowany folder                           	|
+| DELETE  	| /folders/{folderId}/                	| -                                                  	| Usunięty folder                                 	|
+| GET     	| /forms/                             	| Kryteria formularza (opcjonalnie)                  	| Wszystkie formularze spełniające dane kryterium 	|
+| POST    	| /forms/                             	| Dane potrzebne do utworzenia formularza            	| Utworzony formularz                             	|
+| GET     	| /forms/{formId}/                    	| -                                                  	| Wybrany formularz                               	|
+| GET     	| /forms/{formId}/inputs/             	| -                                                  	| Pobranie pól danego formularza                  	|
+| GET     	| /forms/{formId}/records/            	| -                                                  	| Pobranie rekordów danego formularza             	|
+| GET     	| /forms/{formId}/records/{recordId}/ 	| -                                                  	| Pobranie podanego rekordu z formularza          	|
+| POST    	| /forms/{formId}/records/            	| Dane potrzebne do utworzenia rekordu               	| Utworzony rekord                                	|
+| PUT     	| /forms/{formId}/records/{recordId}/ 	| Dane potrzebne do zaktualizowania podanego rekordu 	| Zaktualizowany rekord danego formularza         	|
+| DELETE  	| /forms/{formId}/records/{recordId}/ 	| -                                                  	| Usunięcie danego rekordu                        	|
 
 W niniejszej pracy do zapisywania danych została wykorzystana nierelacyjna baza
 danych – MongoDB. Baza ta idealnie sprawdzi się w zaprojektowanej aplikacji ze względu na
