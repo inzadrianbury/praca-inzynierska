@@ -685,7 +685,15 @@ przedstawione w tab. 4-2. Jako format danych został wybrany format JSON ze wzgl
 bardzo dużą popularność oraz łatwość implementacji.
 
 *tab. 4-2 Tabela przedstawia zaprojektowane API dla serwisu internetowego*
-// ToDo: Add table with designed API 
+
+| Akcja                                   	| Metoda HTTP 	| URI                      	|
+|-----------------------------------------	|-------------	|--------------------------	|
+| Pobranie całej kolekcji                 	| GET         	| /kolekcja/               	|
+| Pobranie pojedynczego elementu kolekcji 	| GET         	| /kolekcja/identyfikator/ 	|
+| Utworzenie nowego elementu kolekcji     	| POST        	| /kolekcja/               	|
+| Podmiana elementu kolekcji              	| PUT         	| /kolekcja/identyfikator/ 	|
+| Edycja elementu kolekcji                	| PATCH       	| /kolekcja/identyfikator/ 	|
+| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|
 
 ## <a name="proxy"></a> Proxy
 
