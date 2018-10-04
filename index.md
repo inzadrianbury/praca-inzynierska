@@ -323,6 +323,7 @@ bardzo wąskiej grupy przypadków. W tab. 3-1 zostały przedstawione, wraz z opi
 encje, które zostały zaimplementowane w napisanej aplikacji.
 
 *tab. 3-1 Spis encji, które zostały zaimplementowane w napisanej aplikacji [10]*
+
 | Nazwa encji                	| Opis encji                                                                                                                                                                                                                                                                                                                                                  	|
 |----------------------------	|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 | machine_tool_specification 	| Ta encja opisuje właściwości obrabiarki, która jest urządzeniem z różnymi ruchomymi częściami, które wykonują pracę.                                                                                                                                                                                                                                        	|
