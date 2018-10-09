@@ -26,7 +26,7 @@
     3. [ZAPROJEKTOWANIE ARCHITEKTURY SERWISU](#zaprojektowanie-architektury-serwisu)
     4. [PLIK KONFIGURACYJNY](#plik-konfiguracyjny)
     5. [MONGOOSE – BIBLIOTEKA DO ZARZĄDZANIE BAZĄ DANYCH M ONGO DB](#mongoose-biblioteka-do-zarzadzanie-baza-danych-mongodb)
-    6. TWORZENIE SERWISÓW
+    6. [TWORZENIE SERWISÓW](#tworzenie-serwisów) 
     7. TWORZENIE KONTROLERÓW
     8. UWIERZYTELNIENIE UŻYTKOWNIKA
     9. MODUŁ GŁÓWNY APLIKACJI 
@@ -940,3 +940,292 @@ module.exports = {
 *rys. 5-6 Zawartość pliku konfiguracyjnego dla wersji produkcyjnej*
 
 ## <a name="mongoose-biblioteka-do-zarzadzanie-baza-danych-mongodb"></a>Mongoose – biblioteka do zarządzanie bazą danych MongoDB
+
+Mongoose jest to biblioteka, która oferuje proste, oparte na schemacie rozwiązanie do
+modelowania danych aplikacji w Node.js z możliwością zapisania danych w bazie MongoDB.
+Obejmuje ona wbudowane modelowanie, sprawdzanie poprawności, ułatwia tworzenie zapytań
+bazodanowych a także rozszerza logikę biznesową [33].
+
+### <a name="laczenie-z-baza-mongo-db"></a> Łączenie z bazą MongoDB
+
+Przez rozpoczęciem pracy z MongoDB należy najpierw nawiązać połączenie z bazą
+danych. W tym celu należy zaimportować moduł „mongoose”, a następnie wywołać funkcję
+„connect” z podaniem odpowiednich parametrów. Ze względu na to, że połączenie to może się nie
+powieść, dobrą praktyką jest wyświetlenie stosownego powiadomienia. Do wyświetlania
+powiadomień został wykorzystany moduł „log4js”. Kod napisany w utworzonej aplikacji,
+wykonujący wymienione czynności, został przedstawiony na rys. 5-7.
+
+```
+// import bibliotek
+const log4js = require('log4js');
+const logger = log4js.getLogger();
+const mongoose = require('mongoose');
+const config = require('config');
+
+const uri = `mongodb://${config.database.host}/${config.database.name}`;
+
+// utworzenie funkcji do łączenia się z bazą
+function connectToDB() {
+    mongoose
+        .connect(uri)
+        .then( _ => logger.info("Connected to the database"))
+        .catch( _ => {
+            logger.error("Error while connecting to the database");
+            logger.info("Trying to reconnect");
+            // spróbuj ponownie się połączyć z bazą po 5 sekundach
+            setTimeout(connectToDB, 5000);
+        });
+}
+
+// wywołanie funkcji
+connectToDB();
+
+// export modułu
+module.exports = mongoose;
+```
+*rys. 5-7 Kod służący do łączenia się z bazą MongoDB*
+
+Należy pamiętać, że wszystkie operacje bazodanowe muszą być wykonywane dopiero po
+uzyskaniu połączenia z bazą, w przeciwnym wypadku napisana aplikacja nie będzie działać
+poprawnie.
+
+### <a name="definiowanie-i-tworzenie-modeli"></a> Definiowanie i tworzenie modeli
+
+W mongoose wszystkie operacje bazodanowe są dostarczane za pomocą modeli. Model
+jest to z zdefiniowany schemat, który na podstawie podanych parametrów jest odpowiedzialny za
+zarządzanie odpowiednią kolekcją bazy danych. W związku z tym przed rozpoczęciem pracy na
+danych, należy utworzyć model z odpowiednimi właściwościami.
+
+W niniejszej pracy zostały utworzone dwa modele. Model o nazwie „Folder”,
+odpowiedzialny za przechowywanie struktury folderów oraz model „Form”, który magazynuje
+dane potrzebne do definiowania, generowania oraz dodawania kolejnych wartości formularzy.
+
+#### <a name="omowienie-modelu-folder"></a> Omówienie modelu "Folder"
+
+Model „Folder”, odpowiedzialny za przechowywanie informacji o folderach, składa się
+z jednego pola, pola „name”. W polu „name” jest przechowywana nazwa folderu. Oprócz tego
+potrzebna jest jeszcze informacja o strukturze folderów. Ta funkcjonalność jest dostarczana przez
+wtyczkę o nazwie „mongoose-path-tree”, napisana przez społeczność, o otwartym kodzie
+źródłowym. Na rys. 5-8 została przedstawiona definicja modelu „Folder” wraz z użyciem
+wymienionej wtyczki.
+
+```
+// Import potrzebnych bibliotek
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const tree = require('mongoose-path-tree');
+
+// Zdefiniowanie schematu
+const FolderSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    }
+});
+
+// Podpiętcie wtyczki “tree”
+FolderSchema.plugin(tree);
+
+// Utworzenie modelu o nazwie “Folder”
+const Folder = mongoose.model('Folder', FolderSchema);
+
+// eksport modelu
+module.exports = Folder;
+```
+*rys. 5-8 Zdefiniowanie modelu o nazwie "Folder”*
+
+Podpięta wtyczka „mongoose-path-tree” rozszerza dany schemat o pole „parent”, które
+zawiera identyfikator folderu, w którym znajduje się folder oraz pole „path”, dostarczające
+informacji o ścieżce danego folderu. Przykładowe wykorzystanie wtyczki zostało przedstawione
+na rys. 5-9.
+
+```
+// Utworzenie folderów
+const obrabiarki = new Folder({ name: "Obrabiarki" });
+const skrawajace = new Folder({ name: "Skrawające" });
+
+// Zdefiniowanie hierarchii
+skrawajace.parent = obrabiarki;
+
+//Zapisanie do bazy danych
+obrabiarki.save().then( _ => {
+    skrawajace.save();
+});
+```
+*rys. 5-9 Przykład wykorzystania wtyczki ”mongoose-path-tree” do zapisu struktury folderów*
+
+Po uruchomieniu i wykonaniu programu przedstawionego na rys. 5-9 zostaną zapisane w
+bazie dokumenty o treści przedstawionej na rys. 5-10.
+
+```
+// dokument nr 1
+{
+    "_id" : "50136e40c78c4b9403000001",
+    "name" : "Obrabiarki",
+    "path" : "50136e40c78c4b9403000001"
+}
+// dokument nr 2
+{
+    "_id"sdf : "50136e40c78c4b9403000002",
+    "name" : "Skrawające",
+    "parent" : "50136e40c78c4b9403000001",
+    "path": "50136e40c78c4b9403000001#50136e40c78c4b9403000002"
+}
+```
+rys. 5-10 Podgląd danych zapisanych w bazie danych po wykonaniu programu
+
+W celu odtworzenia struktury folderów należy skorzystać z funkcji „getChildrenTree”,
+która została dostarczona razem z dołączoną wcześniej wtyczką. Przykładowy kod obrazujący
+działanie funkcji został przedstawiony na rys. 5-11. Podanie jako argumentu wartości „null”
+oznacza, że zostanie odtworzona struktura dla wszystkich folderów. Jeżeli zostanie podany
+identyfikator folderu, zostanie odtworzona struktura dla podanego folderu oraz jego pod folderów.
+
+```
+// Odtworzenie struktury dla wszystkich folderów
+Folder.getChildrenTree( null, {}, function (err, tree) {
+    console.log(tree);
+});
+
+// Wynik, jaki wyświetli się w konsoli po uruchomieniu programu
+[
+    {
+        _id: "50136e40c78c4b9403000001",
+        name: "Obrabiarki",
+        path: "50136e40c78c4b9403000001",
+        parent: "",
+        children: [
+            {
+                _id: "50136e40c78c4b9403000002",
+                name: "Skrawające",
+                parent: "50136e40c78c4b9403000001",
+                path: "50136e40c78c4b9403000001#50136e40c78c4b9403000002",
+                children: [ ]
+            }
+        ]
+    }
+];
+```
+*rys. 5-11 Przykładowe zastosowanie funkcji „getChildrenTree”*
+
+#### <a name="omowienie-modelu-form"></a> Omówienie modelu "Form"
+
+Model „Form” służy do przechowywania informacji na temat formularzy przypisanych
+do konkretnych folderów. Składa się z pięciu pól: „name”, „folder”, „inputs”, „records” oraz
+„predefined”. W polu „name” przechowywana jest nazwa formularza, pole „inputs” odpowiedzialne 
+jest za przechowywania informacji o zdefiniowanych polach edycyjnych, takich 
+jak etykieta, typ oraz wartości. W polu „folder” przechowywany jest identyfikator folderu, do
+którego należy dany formularz. W tablicy „records” przechowywane są wszystkie dane zapisane
+przy pomocy formularzy. Ze względu na to, że istnieje możliwość zapisu danych z formularzy,
+które nie zostały utworzone przy pomocy generatora, zostało dodatkowo dodane pole o nazwie
+„predefinded”, za pomocą którego aplikacja klienta jest wstanie rozpoznać, czy formularz ma
+zostać stworzony na podstawie pól „inputs”, czy ma zostać załadowany z aplikacji klienta. Na rys.
+5-12 został przedstawiony utworzony model w aplikacji.
+
+```
+// Import wymaganych bibliotek
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+//Zdefiniowanie schematu
+const formSchema = new Schema({
+    name: { type: String, required: true },
+    folder: { type: Schema.Types.ObjectId, ref: "Folder" },
+    inputs: [{
+        name: {
+            type: String,
+            required: true
+        },
+        label: {
+            type: String,
+            required: true
+        },
+        type: {
+            type: String,
+            required: true
+        }
+    }],
+    records: [{
+        values: {
+            type: Schema.Types.Mixed,
+            required: true
+    }
+    }],
+    predefined: { type: Boolean, default: false }
+});
+
+// Utworzenie modelu oraz jego eksport
+const Form = mongoose.model("Form", formSchema);
+module.exports = Form;
+```
+*rys. 5-12 Zdefiniowanie modelu o nazwie "Form"*
+
+### <a name="wykonywanie-operacji-bazodanowych"></a> Wykonywanie operacji bazodanowych
+
+W celu wykonywania operacji na kolekcjach, takich jak operacje dodawania, usuwania
+lub aktualizowania danych zapisanych w bazie, biblioteka mongoose dostarcza zestaw metod
+statycznych, dostępnych dla stworzonych modelów. Na rys. 5-13 zostały przedstawione wybrane
+operacje przeszukiwania bazy, jakie zostały wykorzystane w aplikacji.
+
+```
+// Import zdefiniowanego modelu
+const FormModel = require('./form.model');
+
+// Przeszukanie bazy w celu znalezienia formularza o podanym identyfikatorze
+FormModel
+    .findById("50136e40c78c4b9403000001")
+    .then( form => console.log(form) );
+
+// Przeszukanie bazy w celu znalezienia wszystkich formularzy o podanych parametrach
+FormModel
+    .find({ folder: "50136e40c78c4b97je401"})
+    .then( forms => console.log(forms) );
+
+// Przeszukanie bazy w celu otrzymania formularzy, które zawierają rekord o podanym „_id”
+FormModel
+    .find( { "records._id": "50136e40c78c4b9403000325" } )
+    .then( forms => console.log(forms) );
+```
+*rys. 5-13 Spis operacji służących do pobierania danych z bazy*
+
+W celu dodania dokumentów lub ich aktualizacji należy posłużyć się funkcjami, które
+zostały przedstawione na rys. 5-14
+
+```
+// Import zdefiniowanego modelu
+const FormModel = require('./form.model');
+
+// Zapisanie modelu do bazy danych
+const formData = {
+    name:    "Example name",
+    inputs:  [{ name: "lenght", label: "Długość", type: "number"],
+    records: [],
+    folder:  "50136e40c78c4b9403450325",
+}
+const form = new FormModel( formData );
+form.save().then( savedModel => consol.log( savedModel ) );
+
+// Dodanie rekordu do formularza
+const formId = "50136e40c78c4b940348a325";
+const record = { "length": 154 };
+FormModel.findByIdAndUpdate(
+    formId,
+    {$push: {records: record}},
+    {new: true}
+).then( updatedForm => console.log(updatedForm) );
+
+// Usunięcie redordu z formularza
+const recordIdToRemove = "50136e40c78c4b940348a725";
+FormModel.update(
+        { },
+        {$pull: {"records": {_id: recordIdToRemove } } },
+        {new : true}
+    ).then( updatedForm => console.log(updatedForm) );
+
+// Usunięcie dokumentu z podanym identyfikatorem
+FormMode
+    .findByIdAndRemove("50136e40c78c4b940348r725")
+    .then( removalStatistics => console.log(removalStatistics) );
+```
+*rys. 5-14 Spis operacji służących do dodawania, aktualizowania oraz usuwania danych z bazy*
+
+## <a name="tworzenie-serwisow"></a> Tworzenie serwisów
