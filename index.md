@@ -521,7 +521,7 @@ funkcjonalności umożliwiające generowanie dokumentów HTML, co wiąże się z
 dodatkowych zasobów serwera. Uproszczony proces przetwarzania żądania przez serwer w tego
 typu stronach internetowych został przedstawiony na rys. 4-9.
 
-![Uproszczony schemat przetwarzania żądania przez serwer w stronach internetowych typu MPA](schemat-przetwarzania-zadania.png)
+![Uproszczony schemat przetwarzania żądania przez serwer w stronach internetowych typu MPA](./assets/images/schemat-przetwarzania-zadania.png)
 *rys. 4-9 Uproszczony schemat przetwarzania żądania przez serwer w stronach internetowych typu MPA [źródło własne]*
 
 ### <a name="aplikacja-internetowa-spa"></a> Aplikacja internetowa - SPA
