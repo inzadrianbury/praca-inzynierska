@@ -26,7 +26,7 @@
     3. [ZAPROJEKTOWANIE ARCHITEKTURY SERWISU](#zaprojektowanie-architektury-serwisu)
     4. [PLIK KONFIGURACYJNY](#plik-konfiguracyjny)
     5. [MONGOOSE – BIBLIOTEKA DO ZARZĄDZANIE BAZĄ DANYCH M ONGO DB](#mongoose-biblioteka-do-zarzadzanie-baza-danych-mongodb)
-    6. [TWORZENIE SERWISÓW](#tworzenie-serwisów) 
+    6. [TWORZENIE SERWISÓW](#tworzenie-serwisow) 
     7. TWORZENIE KONTROLERÓW
     8. UWIERZYTELNIENIE UŻYTKOWNIKA
     9. MODUŁ GŁÓWNY APLIKACJI 
@@ -681,7 +681,7 @@ najczęściej projektowane API z wykorzystaniem metody http zgodne z architektur
 | Utworzenie nowego elementu kolekcji     	| POST        	| /kolekcja/               	|
 | Podmiana elementu kolekcji              	| PUT         	| /kolekcja/identyfikator/ 	|
 | Edycja elementu kolekcji                	| PATCH       	| /kolekcja/identyfikator/ 	|
-| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|:
+| Usunięcie elementu kolekcji             	| DELETE      	| /kolekcja/identyfikator/ 	|
 
 ## <a name="projektowanie-api-dla-serwisu-internetowego"></a> Projektowanie API dla serwisu internetowego
 
