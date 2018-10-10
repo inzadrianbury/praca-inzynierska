@@ -27,10 +27,10 @@
     4. [PLIK KONFIGURACYJNY](#plik-konfiguracyjny)
     5. [MONGOOSE – BIBLIOTEKA DO ZARZĄDZANIE BAZĄ DANYCH M ONGO DB](#mongoose-biblioteka-do-zarzadzanie-baza-danych-mongodb)
     6. [TWORZENIE SERWISÓW](#tworzenie-serwisow) 
-    7. TWORZENIE KONTROLERÓW
-    8. UWIERZYTELNIENIE UŻYTKOWNIKA
-    9. MODUŁ GŁÓWNY APLIKACJI 
-    10. URUCHOMIENIE APLIKACJI
+    7. [TWORZENIE KONTROLERÓW](#tworzenie-kontrolerow)
+    8. [UWIERZYTELNIENIE UŻYTKOWNIKA](#uwierzytelnienie-uzytkownika)
+    9. [MODUŁ GŁÓWNY APLIKACJI](#modul-glowny-aplikacji)
+    10. [URUCHOMIENIE APLIKACJI](#uruchomienie-aplikacji)
 6. IMPLEMENTACJA APLIKACJI PRZEGLĄDARKOWEJ 
     1. OMÓWIENIE FRAMEWORK'A A NGULAR 
     2. OMÓWIENIE WYKORZYSTANYCH NARZĘDZI FRONT - END'OWYCH
@@ -1229,3 +1229,172 @@ FormMode
 *rys. 5-14 Spis operacji służących do dodawania, aktualizowania oraz usuwania danych z bazy*
 
 ## <a name="tworzenie-serwisow"></a> Tworzenie serwisów
+
+Serwis jest to warstwa w aplikacji odpowiedzialna za wykonywanie logiki biznesowej,
+takiej jak na przykład: pobranie, dodanie czy aktualizowanie danych z bazy danych. W aplikacji
+utworzonej na potrzeby niniejszej pracy zostały utworzone dwa serwisy: serwis obsługujący
+zarządzanie folderami oraz drugi, odpowiedzialny za formularze. Fragment utworzonego serwisu
+dla folderów został przedstawiony na rys. 5-15. Analogicznie serwis został utworzony dla
+formularzy.
+
+```
+// import bibliotek oraz modułów
+const boom = require('boom');
+const FoldersModel = require('./folders.model');
+
+async function getFoldersTree() {
+    return new Promise((resolve, reject) => {
+        FoldersModel.getChildrenTree(null, {}, function (err, tree) {
+            if (err) {
+                reject(err);
+            }
+            resolve(tree);
+        });
+    });
+}
+
+async function getFolder(folderId) {
+    const folder = await FoldersModel.findById(folderId).exec();
+    if (folder) {
+        return folder;
+    } else {
+        throw boom.notFound(`Form with ID '${folderId}' didn't found`);
+    }
+}
+
+// pozostała część serwisu
+// ...
+
+// eksport funkcji
+module.exports = {
+    getFoldersTree,
+    getFolder,
+    (...)
+}
+```
+*rys. 5-15 Fragment serwisu odpowiedzialnego za przetwarzanie danych folderów*
+
+## <a name="tworzenie-kontrolerow"></a> Tworzenie kontrolerów
+
+Kontroler jest to zbiór funkcji odpowiedzialnych na obsługę wybranych punktów
+końcowych. Jego zadaniem jest odczytanie wysłanej wiadomości na serwer, przetworzenie jej
+poprzez wywołanie odpowiedniej funkcji w serwisu, a następnie zwrócenie odpowiedzi. Fragment
+kontrolera odpowiedzialnego za obsługę punktów końcowych dla folderów, wykorzystany w
+napisanej aplikacji, został przedstawiony na rys. 5-16. Analogicznie został napisany kontroler do
+obsługi formularzy.
+
+```
+// import bibliotek oraz modułów
+const express = require(‘express’);
+const router = express.Router();
+const asyncHandler = require(‘express-async-handler’);
+const folderService = require(‘./folder.service’);
+
+router.get(‘/’, asyncHandler(async function (req, res) {
+    const forms = await folderService.getFoldersTree();
+    res.send(forms);
+}));
+
+router.post(‘/’, asyncHandler(async function (req, res) {
+    const folderData = req.body;
+    const folder = await folderService.addFolder(folderData);
+    res.send(folder);
+}));
+
+// pozostała część kontrolera
+
+
+// eksport moduły
+module.exports = router;
+```
+*rys. 5-16 Fragment utworzonego kontrolera, służący do zarządzania folderami*
+
+## <a name="uwierzytelnienie-uzytkownika"></a> Uwierzytelnienie użytkownika
+Aby zabezpieczyć dane przed ich modyfikacją przez osoby nieupoważnione, do aplikacji
+został dodany moduł odpowiedzialny za uwierzytelnienie użytkownika. Uwierzytelnienie jest to
+proces mający na celu określenie czy dana operacja może zostać wykonana na podstawie
+prawdziwość atrybutu pojedynczego fragmentu danych uznawanego przez jednostkę (w tym
+wypadku aplikację) za prawdziwy. Informacją uwierzytelniającą może być np.: cookie
+przeglądarki lub token [34]. W napisanej aplikacji został wykorzystany „Basic http Authentication
+Scheme” [35]. Moduł odpowiedzialny za uwierzytelnienie użytkownika został przedstawiony rys.
+5-17.
+
+```
+// import wymaganych bibliotek
+const basicAuth = require('express-basic-auth');
+
+// pobranie pliku konfiguracyjnego
+const config = require('config');
+
+module.exports = basicAuth({
+    users: {
+        [config.auth.user]: config.auth.password
+    },
+    unauthorizedResponse: function (req) {
+        if (req.auth) {
+            return {error: "Incorrect credentials provided"};
+        } else {
+            return {error: "No credentials provided"}
+        }
+    }
+});
+```
+*rys. 5-17 Kod odpowiedzialny za uwierzytelnienie użytkownika*
+
+Moduł ten sprawdza nagłówek o nazwie „authorization” każdego żądania jakie zostanie
+dostarczone na serwer. Jeżeli wartość danego nagłówka nie jest zgodna z konfiguracją aplikacji,
+zostanie zwrócony błąd z odpowiednią informacją, przez co logika biznesowa danego żądanie nie
+zostanie wykonana.
+
+## <a name="modul-glowny-aplikacji"></a> Moduł główny aplikacji
+
+Po utworzeniu serwisów, kontrolerów oraz własnych modułów należy utworzyć moduł
+główny. Moduł ten zainicjuje połączenie z bazą danych, zaimportuje odpowiednie moduły oraz
+utworzone wcześniej kontrolery po czym uruchomi aplikację. Najistotniejsze fragmenty kodu
+moduły głównego zostały przedstawione na rys. 5-18.
+
+```
+// importowanie bibliotek oraz modułów
+const express = require(‘express’);
+const log4js = require(‘log4js’);
+const logger = log4js.getLogger();
+const app = express();
+// (..) pozostałe pomniejsze biblioteki
+
+// uruchomienie modułu do łączenia się z bazą danych
+require(‘./middleware/mongoose’);
+
+// podłączenie modułu odpowiedzialnego za uwierzytelnianie
+app.use(require(‘./middleware/basicAuth’));
+
+// podłączenie utworzonych kontrolerów pod odpowiednie ścieżki
+app.use(‘/forms’, require(‘./app/form/form.app’));
+app.use(‘/folders’, require(‘./app/folder/folder.app’));
+
+// utworzenie oraz uruchomienie aplikacji
+const port = 3000;
+const server = http.createServer(app);
+server.listen(port);
+```
+*rys. 5-18 Najistotniejsze fragmenty kodu modułu głównego*
+
+## <a name="uruchomienie-aplikacji"></a> Uruchomienie aplikacji
+Przed uruchomieniem aplikacji należy mieć zainstalowane platformę Node.js w wersji
+9.8.0 oraz uruchomioną bazę MongoDB w wersji 3.7.1. W przeciwnym wypadku aplikacja może
+nie działać poprawnie. W celu uruchomienia aplikacji należy wykonać polecenia przedstawione
+na rys. 5-19.
+
+```
+$ cd /scieżka/do/aplikacji
+# instalacja bibliotek
+$ npm install
+
+# uruchomienie aplikacji z konfiguracją produkcyjną
+$ npm run start-prod
+
+# uruchomienie aplikacji z konfiguracją deweloperską (opcjonalnie)
+$ npm run start-dev
+```
+*rys. 5-19 Lista komend służących do uruchomienia aplikacji*
+
+# <a name="implementacja-aplikacji-przegladarkowej"></a> Implementacja aplikacji przeglądarkowej
