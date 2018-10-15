@@ -31,13 +31,13 @@
     8. [UWIERZYTELNIENIE UŻYTKOWNIKA](#uwierzytelnienie-uzytkownika)
     9. [MODUŁ GŁÓWNY APLIKACJI](#modul-glowny-aplikacji)
     10. [URUCHOMIENIE APLIKACJI](#uruchomienie-aplikacji)
-6. IMPLEMENTACJA APLIKACJI PRZEGLĄDARKOWEJ 
-    1. OMÓWIENIE FRAMEWORK'A A NGULAR 
-    2. OMÓWIENIE WYKORZYSTANYCH NARZĘDZI FRONT - END'OWYCH
-    3. KOMUNIKACJA Z SERWEREM
-    4. PROCES UWIERZYTELNIANIA 
-    5. PROJEKTOWANIE FORMULARZA "MACHINE TOOL SPECIFICATION"
-    6. PROJEKTOWANIE FUNKCJONALNOŚCI DO TWORZENIA FORMULARZY 
+6. [IMPLEMENTACJA APLIKACJI PRZEGLĄDARKOWEJ](#implementacja-aplikacji-przegladarkowej)
+    1. [OMÓWIENIE FRAMEWORK'A ANGULAR](#omowienie-frameworka-angular)
+    2. [OMÓWIENIE WYKORZYSTANYCH NARZĘDZI FRONT-END'OWYCH](#omowienie-wykorzystanych-narzedzi-front-end-owych)
+    3. [KOMUNIKACJA Z SERWEREM](#komunikacja-z-serwerem)
+    4. [PROCES UWIERZYTELNIANIA](#proces-uwierzytelniania)
+    5. [PROJEKTOWANIE FORMULARZA "MACHINE TOOL SPECIFICATION"](#projektowanie-formularza-machine-tool-specification)
+    6. [PROJEKTOWANIE FUNKCJONALNOŚCI DO TWORZENIA FORMULARZY](#projektowanie-funkcjonalnosci-do-tworzenia-formularzy)
     7. PROJEKTOWANIE PANELU GŁÓWNEGO STRONY
     8. UTWORZENIE MODUŁU GŁÓWNEGO
     9. PRZYGOTOWANIE APLIKACJI DO URUCHOMIENIA
@@ -1398,3 +1398,576 @@ $ npm run start-dev
 *rys. 5-19 Lista komend służących do uruchomienia aplikacji*
 
 # <a name="implementacja-aplikacji-przegladarkowej"></a> Implementacja aplikacji przeglądarkowej
+
+## <a name="omowienie-frameworka-angular"> Omówienie framework’a Angular 
+
+Angular jest to mocno rozbudowany framework JavaScript, który może zostać użyty do
+tworzenia aplikacji internetowych (SPA), stacjonarnych oraz mobilnych. Został zaprojektowany i
+obecnie rozwijany przez firmę Google. Pierwsza stabilna wersja została opublikowana 14
+września 2016 roku [36].
+
+Angular został napisany w języku TypeScript. Posiada on wbudowany mechanizm do
+dynamicznej synchronizacji (two way data binding) pomiędzy widokiem (plikiem HTML) a
+modelem (plikiem JavaScript ) oraz system do wstrzykiwania zależności (dependency injection)
+[37]. Posiada również bogatą paletę narzędzi do testowania, własne moduł obsługujący
+nawigowanie po poszczególnych widokach, moduły walidujące formularze i znacznie więcej [38]. 
+
+### <a name="moduly"> Moduły
+
+Podstawowymi elementami składowymi aplikacji Angular są moduły. Moduł jest to
+mechanizm do grupowania komponentów, dyrektyw, serwisów, modyfikatorów, które są
+powiązane, w taki sposób, aby można było połączyć je z innymi modułami w celu utworzenia całej
+aplikacji. Aplikacja Angular może być potraktowana jako „układanka”, w której każdy element
+(moduł) jest odpowiedzialny za konkretny mechanizmy [39]. Do definiowana modułów służy
+adnotacja „NgModule”. Przykład jak tworzyć moduły został przedstawiony rys. 6-1. 
+
+```
+@NgModule({
+ imports: [ NazwaModuły, KolejnyModuł ],
+ declarations: [ JedenKomponent, DrugiKomponent ],
+ providers: [ NazwaSerwisu, KolejnySerwis ]
+}) 
+export class AppModule { } 
+```
+*rys. 6-1 Przykład utworzonego modułu w aplikacji Angular*
+
+Aplikacja musi zawsze posiadać co najmniej jeden moduł główny, który umożliwi
+uruchomienie aplikacji. W tym celu należy w jednym ze zdefiniowanych modułów dodać
+właściwość „bootstrap”, tak jak pokazano na rys. 6-2. 
+
+```
+@NgModule({
+ imports: [ … ], declarations: [ … ], providers: [ … ],
+ bootstrap: [NazwaKomponentuDoUruchomienia]
+}) 
+export class RootModule { } 
+```
+*rys. 6-2 Przykład moduły głównego*
+
+### <a name="komponenty"> Komponenty
+
+Komponenty są najbardziej podstawowymi blokami konstrukcyjnymi interfejsu
+użytkownika w aplikacji. Cała strona wyświetlana użytkownikowi jest drzewem komponentów
+Angular’owych. Komponent musi zawsze należeć do moduły, aby można było go wykorzystać w
+aplikacji. Aby określić do jakiego moduły należy dany komponent należy jego nazwę wymienić
+w polu „declarations” w module docelowym [40].
+
+Komponent składa się z trzech podstawowych parametrów: selektora, szablonu HTML
+oraz arkusza stylów. Natomiast, w definicji klasy komponentu definiuje się logikę danego
+szablonu, taką jak na przykład reagowanie na zdarzenia wywołanie przez użytkownika, np.:
+kliknięcie, wpisanie tekstu do pole edycyjnego itp. Przykład komponentu został przedstawiony na
+rys. 6-3.
+
+```
+// zawartość pliku “hello.component.ts”
+@Component({
+ selector: “inz-hello”,
+ templateUrl: “./hello.component.html”,
+ styleUrls: [“./hello.component.css”]
+})
+export class HelloComponent {
+ userName: string;
+ constructor() {
+ this.userName= ‘World’;
+ setTimeout( () => { // zmień wartość pola “userName” po upływie dwóch sekund
+ this.userName= ‘John Doe’;
+ }, 2000);
+ }
+}
+
+// zawartość pliku “hello.component.html”
+<h1>Hello {{userName}}</h1>
+
+// zawartość pliku „hello.component.css”
+h1 {color: red}; 
+```
+*rys. 6-3 Przykład utworzonego komponentu za pomocą dekoratora w Angular’ze*
+
+Zapis „{{userName}}” oznacza, że dana wartość ma zostać pobrana z logiki kontrolera.
+Dzięki „two way data binding”, czyli dwukierunkowe wiązaniu danych, każda zmiana w modelu
+(w tym przypadku polu „userName”) jest natychmiast propagowana do szablonu HTML oraz
+wszystkie zmiany dokonywane na widoku (np.: użytkownik wpisuje wartość do formularza) jest
+odzwierciedlana w modelu bazowym. Oznacza to, że gdy zmieniają się dane w aplikacji, zmienia
+się także interfejs użytkownika i odwrotnie, kiedy zmienia się interfejs użytkownika od razu
+aktualizowane są dane aplikacji zapisane w logice kontrolera. Wszystko to dzieje się
+automatycznie, przez co programista nie musi dbać o synchronizację danych. 
+
+### <a name="serwisy"> Serwisy
+
+Komponenty nie powinny pobierać lub zapisywać danych bezpośrednio w logice.
+Powinny skupiać się tylko na prezentacji widoków użytkownikowi. Do pobierania i zapisywania
+danych (np.: z serwisu internetowego) idealnie sprawdzą się serwisy. Serwis jest to specjalna
+klasa, której zadaniem jest dostarczanie usług komponentom. Zapewnia to separację danych na
+dwie warstwy: warstwę prezentacji oraz warstwę odpowiedzialną za dostarczanie danych. Na rys.
+6-4 został przedstawiony przykładowy serwisu w platformie Angular. 
+
+```
+// Dodanie klasy do systemu DI (dependency injection)
+@Injectable({
+    providedIn: ‘root’ 
+})
+export class UserService {
+ private userName: string = “John Doe”;
+ constructor() { }
+
+ getUserName(): string {
+ return this.userName;
+ }
+
+ /* Implementacja pozostałych funkcji*/
+} 
+```
+*rys. 6-4 Przykład tworzenia serwisu w platformie Angular*
+
+### <a name="nawigacja"> Nawigacja
+
+Platforma Angular posiada wbudowany moduł do nawigowania po aplikacji o nazwie
+„RouterModule”. Umożliwia on powiązanie komponentu z odpowiednią ścieżką w aplikacji.
+Aplikacja po uruchomieniu sprawdza jaka aktualnie jest ścieżka zapisana w przeglądarce. W
+zależności od tego jest ładowany komponent, który został do niej przypisany. Przykład, jak
+konfigurować nawigowanie po aplikacji, został przedstawiony na rys. 6-5.
+
+```
+const appRoutes: Routes = [
+ { path: ‘hello-world’, component: HelloWorldComponent },
+ { path: ‘’, component: AppComponent },
+ { path: ‘**’, redirectTo: ‘hello-world’ }
+];
+@NgModule({
+ imports: [
+ RouterModule.forRoot(appRoutes)
+ // pozostałe moduły
+ ],
+ // pozostała częśc modułu
+})
+export class AppModule { } 
+```
+*rys. 6-5 Przykład jak konfigurować nawigowanie po aplikacji*
+
+Jeżeli zapisaną ścieżka jest ‘hello-world’, zostanie załadowany komponent o nazwie
+„HelloWorldComponent”. Jeżeli ścieżka nie zostanie podana – zostanie załadowany komponent
+„AppComponent”. Jeżeli ścieżka, która została podana nie zostanie znaleziona, nastąpi
+przekierowanie na ścieżkę „hello-world”. 
+
+## <a name="omowienie-wykorzystanych-narzedzi-front-end-owych"> Omówienie wykorzystanych narzędzi front-end’owych
+
+### <a name="angular-cli"> Angular CLI
+
+Angular CLI to narzędzie, którego celem jest ułatwienie tworzenia oraz rozwijania
+aplikacji, która została oparta na Angular’ze. Za jego pomocą można zainicjować gotową, w pełni
+działającą aplikację z zainstalowanymi już bibliotekami oraz narzędziami deweloperskimi. Można
+również generować komponenty, moduły, serwisy i pozostałe elementy dostępne we framework’u
+Angular. Angular CLI, podobnie jak Angular, został stworzony przez Google i obecnie jest
+rozwijany również przez społeczeństwo [41]. Angular CLI został napisany w TypeScript’cie i
+udostępniony w postaci biblioteki w repozytorium pakietów npm. Na rys. 6-6 zostały
+przedstawione podstawowe komendy dostępne w narzędziu Angular CLI.
+
+```
+# generowanie pustego projektu
+$ ng new nazwa-projektu
+
+# generowanie pustego kompentu
+$ ng generate component nazwa_kompnentu
+
+# generowanie pustego moduły
+$ ng generate module nazwa_modułu
+
+# generowanie pustego serwisu
+$ ng generate service nazwa_serwisu 
+```
+*rys. 6-6 Lista podstawowych komend dostępnych w Angular CLI*
+
+### <a name="TypeScript"> TypeScript
+
+TypeScript jest to język programowania o otwartym kodzie źródłowym, opracowanym i
+obsługiwanym przez firmę Microsoft. Jest to nadzbiór języka JavaScript (oznacza to, że każdy
+istniejący program napisany w JavaScript jest również poprawnym programem TypeScript), który
+zapewnia opcjonalne typowanie statyczne, dostarcza pojęcie klas, interfejsów, typów
+wyliczeniowych (enum’y) i wiele więcej, których nie ma w języku JavaScript [42]. Program
+napisany w języku TypeScript może zostać skompilowany do kodu JavaScript, który może być
+później wykorzystywany do uruchomienia na przykład przez przeglądarkę. Przykład napisanego
+programu w języku TypeScript, który następnie został skompilowany do języka JavaScript został
+przedstawiony na rys. 6-7.
+
+![Kompilacja języka TypeScript do języka JavaScript](./assets/images/typescript-do-javascript.png)
+*rys. 6-7 Kompilacja języka TypeScript do języka JavaScript [źródło własne]*
+
+Należy zwróć szczególną uwagę podczas pisania w języku TypeScript, ponieważ
+zdefiniowane typ zmiennych oraz funkcji są usuwane podczas tłumaczenia na JavaScript. Wynika
+to z tego, że w języku JavaScript nie ma typowania statycznego. Nawet jeżeli programista
+zdefiniuje typ zmiennej lub funkcji w języku TypeScript, nie oznacza to, że w czasie wykonywania
+programu, po kompilacji do języka JavaScript, typ ten zostanie sprawdzony. Należy o tym
+szczególnie pamiętać jeżeli napisany program korzysta z API innych programów, np.: serwisów
+internetowych.
+
+### <a name="bootstrap"> Bootstrap
+
+Bootstrap jest to darmowy, o otwartym kodzie źródłowym, framework do szybkiego
+projektowania stron oraz aplikacji internetowych. Zawiera gotowe szablony, oparte na HTML’u
+oraz CSS’ie, dla typografii, formularzy, tabel, przycisków, nawigacji i wiele więcej. Został
+zaprojektowany i obecnie rozwijany przez programistów Twitter’a [43]. Obecnie jest drugim
+najbardziej znanym repozytorium na platformie GitHub z 125 000 gwiazdkami [44]. Przykład
+strony internetowej opartej na framework’u Bootstrap została przedstawiona na rys. 6-8. 
+
+![Przykład strony internetowej zbudowanej w oparciu o framework Bootstrap](./assets/images/bootstrap.png)
+*rys. 6-8 Przykład strony internetowej zbudowanej w oparciu o framework Bootstrap [45]*
+
+### <a name="front-awesome"> Front Awesome
+
+Font Awesome to gotowy zestaw ikon oraz stylów utworzonych do użycia na stronach
+internetowych. Pierwotnie zostały on zaprojektowane do użycia z bootstrap’em. Obecnie pakiet
+ten składa się z 675 ikon [46] . Przykładowe ikony dostępne w pakiecie Font Awesome zostały
+przedstawione na rys. 6-9.
+
+![Przykład dostępnych ikon dostępnych w pakiecie Font Awesome](./assets/images/font-awesome.png)
+*rys. 6-9 Przykład dostępnych ikon dostępnych w pakiecie Font Awesome [47]*
+
+## <a name="komunikacja-z-serwerem"> Komunikacja z serwerem
+
+Większość aplikacji front-end’owych wymaga komunikacji z usługami internetowymi
+(serwerami) za pośrednictwem protokołu http. Nowoczesne przeglądarki internetowe obsługują
+dwa różne interfejsy API do tworzenia żądań http: „XMLHttpRequestinterfejs” oraz „fetch()”.
+Framework Angular oferuje wbudowany, uproszczony moduł do połączeń http, który opiera się
+na „XMLHttpRequestinterfejs”. 
+
+Na rys. 6-10 został przedstawiony napisany kod, wykorzystujący opisany moduł o nazwie
+„HttpClient”, służący do nawiązywania połączeń z napisanym serwisem internetowym
+(serwerem). Wartość zmiennej „apiBaseUrl” jest nadawana podczas budowania aplikacji, w
+zależności od kontekstu (środowiska deweloperskiego). 
+
+```
+@Injectable({ 
+    providedIn: 'root'
+})
+export class ApiService {
+    private serverUrl = environment.apiBaseUrl;
+    constructor(private httpClient: HttpClient) { }
+
+    get<T>(url: string, options?: Options): Observable<any> {
+       return this.httpClient.get(`${this.serverUrl}${url}`, options); 
+    }
+
+    post<T>(url: string, body: any, options?: Options): { … }
+
+    put<T>(url: string, body: any, options?: Options): { … }
+
+    delete<T>(url: string): { … }
+
+    patch<T>(url: string, body: any, options?: Options) { … }
+
+    options(url: string, options?: Options) { … }
+} 
+```
+*rys. 6-10 Fragment serwisu odpowiedzialnego za łączenie się z serwisem internetowym*
+
+Serwis ten jest rdzeniem dla pozostałych serwisów służących do nawiązywania
+„konkretnych” połączeń z serwerem. Przykład serwisu wykorzystującego serwis „ApiService”
+został przedstawiony na rys. 6-11. Analogicznie został utworzy serwis „FormService” służący do
+zarządzania formularzami przypisanymi do konkretnego folderu oraz „AuthService” służący do
+uwierzytelniania użytkownika korzystającego z aplikacji.
+
+```
+@Injectable({ 
+    providedIn: ‘root’ 
+})
+export class FolderService {
+ constructor(private apiService: ApiService) {}
+
+ getFolderTree(): Observable<FolderToRead[]> {
+ return this.apiService.get(‘folders/‘);
+ }
+
+ getFolder(folderId: string): Observable<FolderToRead> {…}
+
+ addFolder(folder: FolderToCreate): Observable<FolderToRead> {…}
+
+ updateFolder(folder: FolderToUpdate): Observable<FolderToRead> {…}
+
+ removeFolder(folderId: string): Observable<FolderToRead> {…}
+
+} 
+```
+*rys. 6-11 Przykład napisanego serwisu, wykorzystującego „ApiService”, służącego do zarządzania strukturą folderów*
+
+## <a name="proces-uwierzytelniania"> Proces uwierzytelniania 
+
+Zaimplementowany serwis internetowy (opisany w poprzednim rozdziale) wymaga
+uwierzytelnienia użytkownika korzystającego z API, w celu zabezpieczenia się przed modyfikacją
+przez osoby niepowołane. W celu uzyskania uwierzytelnienia należy wysłać wraz z każdym
+żądaniem nagłówek z loginem oraz hasłem w postaci tekstu, zakodowanego przez algorytm
+„Base64”. Serwis odpowiedzialny za przechowywanie wpisanego loginu i hasła do aplikacji oraz
+jego zakodowanie został przedstawiony na rys. 6-12.
+
+```
+@Injectable({ 
+    providedIn: ‘root’ 
+})
+export class AuthService {
+ private authTokenKey = ‘login_token’;
+
+ constructor(private apiService: ApiService,
+
+ private storageService: StorageService) { }
+
+ private generateToken(data: LoginForm): string {
+    return ‘Basic ${btoa(data.login + ‘:’ + data.password)}‘;
+ }
+
+ getAuthorizationHeaderKey(): string {
+    return ‘Authorization’;
+ }
+
+ signIn(data: LoginForm): Promise<boolean> {
+    const token = this.generateToken(data);
+    return this.verifyToken(token);
+ }
+
+ private verifyToken(token: string): Promise<boolean>) { … }
+
+ isLogin(): Promise<boolean> { … }
+
+ logout(): Promise<void> ) { … }
+
+ getAuthTokenFromMemory() { … }
+
+ private removeAuthToken() ) { … }
+
+ private saveAuthTokenToMemory(token: string) { … }
+
+}
+
+interface LoginForm { 
+    login: string; 
+    password: string; 
+} 
+```
+*rys. 6-12 Fragment serwisu „AuthService” odpowiedzialnego za uwierzytelnianie użytkownika*
+
+Oprócz samego serwisu odpowiedzialnego za przechowywanie informacji o aktualnie
+zalogowanym użytkowniku potrzebny jest również mechanizm, którego zadaniem będzie
+dodawanie do każdego żądania, wysłanego na serwer, nagłówka uwierzytelniającego (Basic
+Auth). Angular umożliwia modyfikację każdego żądania, przed wysłaniem go na serwer, za
+pomocą klasy, która implementuje interfejs „HttpInterceptor” [48]. Utworzona klasa,
+implementująca wymieniony interfejs została przedstawiona na rys. 6-13.
+
+```
+@Injectable({ 
+    providedIn: ‘root’ 
+})
+export class AuthInterceptor implements HttpInterceptor {
+    constructor(private authService: AuthService) { }
+
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        const authorizationHeaderValue = this.authService.getAuthTokenFromMemory();
+        const authorizationHeaderKey = this.authService.getAuthorizationHeaderKey();
+
+        if (request.headers.has(authorizationHeaderKey)) {
+            return next.handle(request);
+        } else {
+            const updatedRequest = request.clone({
+                headers: request.headers.set(
+                authorizationHeaderKey, authorizationHeaderValue)
+            });
+            return next.handle(updatedRequest);
+        }
+    }
+} 
+```
+*rys. 6-13 Serwis odpowiedzialny za wstrzykiwanie nagłówka z danymi służącymi do uwierzytelniania użytkownika*
+
+Oprócz samego napisania interceptor’a należy go jeszcze „włączyć” do moduły głównego
+napisanej aplikacji, tak jak pokazano na rys. 6-14. 
+
+```
+@NgModule({
+    imports: […],
+    providers: [ {
+        provide: HTTP_INTERCEPTORS,
+        useClass: AuthInterceptor,
+        multi: true
+    } ],
+    (…)
+}) 
+export class CoreModule { } 
+```
+*rys. 6-14 Podpięcie „Interceptor’a” do moduły głównego aplikacji*
+
+## <a name="projektowanie-formularza-machine-tool-specification"> Projektowanie formularza „Machine Tool Specification”
+
+Formularz „Machine Tool Specification”, który ma zostać zaimplementowany, składa się
+z czterdziestu czterech obiektów, które są ze sobą powiązane relacjami - jeden do jeden lub jeden
+do wielu. Przed przystąpieniem do pisania formularzy, należy najpierw utworzyć modele
+obiektów, które zostaną później wykorzystane do utworzenia formularzy. Na rys. 6-15 został
+przedstawiony przykładowy model, który został utworzony w niniejszej aplikacji. Pozostałe
+czterdzieści trzy modele zostały utworzone analogicznie. Dodatkowo każda klasa posiada funkcję
+statyczną „getFormControls”, której zadaniem jest dostarczenie danych potrzebnych do
+zbudowania formularza (takich jak np.: czy dane pole jest polem obowiązkowym). 
+
+```
+export class MachineToolSpecification extends MachineTool {
+    machine_class: MachineClass = null;
+    device_id: DeviceId = new DeviceId();
+    location: Location = new Location();
+    its_elements: MachineToolElement[] = [];
+    (…)
+
+    constructor(machineToolSpecification?) {
+        super(machineToolSpecification);
+        Object.assign(this, machineToolSpecification);
+    }
+
+    public static getFormControls(loadModel?) { … }
+} 
+```
+*rys. 6-15 Fragment modelu “MachineToolSpecification”*
+
+Oprócz samego modelu, ze względu na to, że model jest bardzo złożony, potrzebny jest
+jeszcze serwis, który będzie odpowiedzialny za przechowywanie aktualnie edytowanego modelu.
+Napisany serwis został przedstawiony na rys. 6-16. 
+
+```
+@Injectable({ 
+    providedIn: ‘root’
+})
+export class MachineToolSpecificationFormService {
+    machineToolSpecificationForm: FormGroup;
+
+    constructor() { this.loadMachineToolSpecificationFormFromModel(); }
+    
+    get machine_class() {
+        return this.machineToolSpecificationForm.controls[‘machine_class’]
+    }
+
+    get installationForm() {
+        return this.machineToolSpecificationForm.controls[’installation’];
+    }
+
+    get standardMachiningProcessForm() {(…)}
+
+    (…) // pozostałe pola
+    
+    loadMachineToolSpecificationFormFromModel( machineToolSpecification ={} ) {
+    }
+
+    (…)
+} 
+```
+*rys. 6-16 Serwis odpowiedzialny za zarządzanie aktualnie edytowanym modelem*
+
+Następnym krokiem jest już utworzenie wszystkich formularzy na podstawie napisanych
+wcześniej modeli. Przykładowo utworzony komponent zawierający dany formularz został
+przedstawiony na rys. 6-17. Ta czynność została wykonana analogicznie dla każdego modelu
+(czterdzieści trzy razy).
+
+```
+// location-form.component.html
+<inz-form [form]=”locationForm” [label]=”label” [required]=”required”>
+  <inz-input controlName=”business_unit” label=”Business Unit”></inz-input>
+  <inz-input controlName=”plant_location” label=”Plant Location”></inz-input>
+  <inz-input controlName=”building” label=”Building”></inz-input>
+  <inz-input controlName=”cell” label=”Cell”></inz-input>
+</inz-form>
+
+// location-form.component.ts
+@Component({
+  selector: ‘inz-location-form’,
+  templateUrl: ‘./location-form.component.html’,
+  styleUrls: [’./location-form.component.sass’]
+})
+export class LocationFormComponent {
+  @Input() locationForm: FormGroup;
+  @Input() label: string;
+  @Input() required: boolean;
+} 
+```
+*rys. 6-17 Utworzony formularz dla modelu o nazwie „Location”*
+
+Kolejnym krokiem jest stworzenie komponentu, którego zadaniem będzie ściągnięcie
+informacji z URL’a przeglądarki. Na jego podstawie zostanie pobrany odpowiedni model z
+serwisu (opisanego powyżej) przechowywującego aktualnie edytowany model oraz przekazanie
+odpowiednich parametrów do komponentu odpowiedzialnego za wyświetlenie formularza.
+Przykładowo zaimplementowany komponent, wykonujące opisane czynności, wykorzystany w
+niniejszej pracy, został przedstawiony na rys. 6-18. 
+
+```
+// turret.component.html
+<inz-form-array [forms]=”turretForm” [formGroupGenerator]=”generator” label=”Turret”>
+  <ng-template #controls let-index=”index”>
+  <inz-turret-form [turretForm]=”turretForm.controls[index]”>
+  </inz-turret-form>
+  <inz-form-href [href]=”index + ‘/turret-contents’” label=”Turret contents”>
+  </inz-form-href>
+  </ng-template>
+</inz-form-array>
+
+// turret.component.ts
+@Component({
+  selector: ‘inz-turret’,
+  templateUrl: ‘./turret.component.html’,
+  styleUrls: [‘./turret.component.sass’] })
+export class TurretComponent implements OnInit {
+    turretForm: FormArray;
+    generator = Turret.getFormControls;
+    private machineToolElementId: number;
+
+    constructor(private machineToolSpecificationFormService: MachineToolSpecificationFormService, private activatedRoute: ActivatedRoute) { }
+
+    ngOnInit(): void {
+        this.activatedRoute.params.subscribe( params => {
+            this.machineToolElementId = +params[‘machineToolElementId’];
+            this.turretForm = this.machineToolSpecificationFormService.getTurrets(this.machineToolElementId);
+        });
+    }
+} 
+```
+*rys. 6-18 Przykładowy komponent odpowiedzialny za odczytanie aktualnej ścieżki na stronie internetowej oraz wyświetlenie odpowiedniego formularza*
+
+Przedostatnim krokiem jest podpięcie komponentów do nawigacji tak, aby każdy z
+formularzy ładował się w zależności od aktualnych potrzeb (od aktualnej ścieżki w przeglądarce).
+Fragment logiki nawigacyjnej został przedstawiony na rys. 6-19. 
+
+```
+const routes: Routes = [
+    {   path: ‘’,
+        component: MachineToolSpecificationLayoutComponent,
+        children: [
+            {path: ‘’, component: MachineToolSpecificationComponent },
+            {path: ‘installation’, component: InstallationComponent },
+            {path: ‘machining-capabilities’, component: MachiningCapabilitiesComponent },
+            {path: ‘device-id’, component: DeviceIdComponent },
+            {path: ‘its-elements’, component: ItsElementsComponent },
+            (…) // pozostała część nawigacji
+        ],
+    },
+]; 
+```
+*rys. 6-19 Fragment obiektu przechowywującego logikę nawigacyjną, odpowiedzialną za ładowanie odpowiednich komponentów w zależności od aktualnej ścieżki w przeglądarce*
+
+Ostatnim krokiem jest utworzenie modułu składającego się ze wszystkich utworzonych
+komponentów oraz dołączenie obiektu z logiką nawigacyjną. Fragment utworzonego modułu
+został przedstawiony na rys. 6-20. 
+
+```
+@NgModule({
+ imports: [
+    RouterModule.forChild(routes),
+    (…)
+ ],
+ declarations: [
+    StandardMachiningProcessComponent,
+    StandardMachiningProcessFormComponent,
+    (…) // pozostałe komponenty
+ ]
+})
+export class MachineToolSpecificationModule { } 
+```
+*rys. 6-20 Fragment moduły składającego się z komponentów oraz nawigacji potrzebnych do wyświetlenia formularzy „Machine Tool Specification”*
+
+Interfejs graficznego, napisanego moduły, został przedstawiony na rys. 6-21. Moduł ten
+składa się jeszcze z kilku widoków podrzędnych, jednak wszystkie wyglądają analogicznie do
+przedstawionego.
+
+![ Wygląd utworzonego formularza implementującego normę ISO 14649-201](formularz-machine-tool-specification.png)
+*rys. 6-21 Wygląd utworzonego formularza implementującego normę ISO 14649-201 [źródło własne]*
+
+## <a name="projektowanie-funkcjonalnosci-do-tworzenia-formularzy"> Projektowanie funkcjonalności do tworzenia formularzy
