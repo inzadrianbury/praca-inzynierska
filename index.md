@@ -38,10 +38,10 @@
     4. [PROCES UWIERZYTELNIANIA](#proces-uwierzytelniania)
     5. [PROJEKTOWANIE FORMULARZA "MACHINE TOOL SPECIFICATION"](#projektowanie-formularza-machine-tool-specification)
     6. [PROJEKTOWANIE FUNKCJONALNOŚCI DO TWORZENIA FORMULARZY](#projektowanie-funkcjonalnosci-do-tworzenia-formularzy)
-    7. PROJEKTOWANIE PANELU GŁÓWNEGO STRONY
-    8. UTWORZENIE MODUŁU GŁÓWNEGO
-    9. PRZYGOTOWANIE APLIKACJI DO URUCHOMIENIA
-    10. OGRANICZENIA
+    7. [PROJEKTOWANIE PANELU GŁÓWNEGO STRONY](#projektowanie-panelu-glownego-strony)
+    8. [UTWORZENIE MODUŁU GŁÓWNEGO](#utworzenie-modułu-glownego)
+    9. [PRZYGOTOWANIE APLIKACJI DO URUCHOMIENIA](#przygotowanie-aplikacji-do-uruchomienia)
+    10. [OGRANICZENIA](#ograniczenia)
 7. KONFIGUROWANIE SERWISU PROXY 
     1. OMÓWIENIE SERWISU N GINX
     2. KONFIGURACJA N GINX 
@@ -1967,7 +1967,446 @@ Interfejs graficznego, napisanego moduły, został przedstawiony na rys. 6-21. M
 składa się jeszcze z kilku widoków podrzędnych, jednak wszystkie wyglądają analogicznie do
 przedstawionego.
 
-![ Wygląd utworzonego formularza implementującego normę ISO 14649-201](formularz-machine-tool-specification.png)
+![Wygląd utworzonego formularza implementującego normę ISO 14649-201](formularz-machine-tool-specification.png)
 *rys. 6-21 Wygląd utworzonego formularza implementującego normę ISO 14649-201 [źródło własne]*
 
-## <a name="projektowanie-funkcjonalnosci-do-tworzenia-formularzy"> Projektowanie funkcjonalności do tworzenia formularzy
+## <a name="projektowanie-funkcjonalnosci-do-tworzenia-formularzy"></a> Projektowanie funkcjonalności do tworzenia formularzy
+
+
+Aplikacja, oprócz możliwości dodawania kolejnych rekordów danych za pomocą
+formularza „Machine Tool Specification”, ma oferować możliwość tworzenia własnych,
+„płaskich” formularzy, składających z dowolnej liczy pól. W celu dostarczenia tej funkcjonalności
+należy utworzyć dwa kolejne widoki:
+* widok, za pomocą którego użytkownik będzie mógł tworzyć szablon formularza
+* widok umożliwiający łatwe dodawania kolejnych porcji danych za pomocą formularza utworzonego na podstawie dostarczonego szablonu
+
+## <a name="tworzenie-szablonu-formularza"></a> Tworzenie szablonu formularza
+
+Aby móc tworzyć własne formularze należy utworzyć formularz, za pomocą którego
+użytkownik będzie mógł definiować właściwości poszczególnych pól. Każde pole w formularzu
+będzie składać się z trzech właściwości:
+
+* klucza – nazwa ta zostanie wysłana na serwer i zapisana jako klucz w bazie, w związku z tym, w nazwie pola nie mogą znajdować się znaki specjalne takie jak np.: &, %, ., # itp.
+* etykiety – etykieta odpowiedzialna jest za opisywanie wybranego pole
+* typu – typ określa, czy do danego pola będzie można wpisać tekst, czy liczbę
+
+Gdy znane są już właściwości pól potrzebnych do uzupełnienia przez użytkownika,
+kolejnym krokiem jest utworzenie odpowiedniej logiki. Logika ta ma zapewniać dynamiczne
+dodawanie kolejnych pól z możliwością wpisania wyżej wymienionych właściwości oraz
+właściwą walidacją. Napisane funkcje zostały przedstawione na rys. 6-22
+
+```
+// funkcja do zainicjowania nowego formularza
+buildForm(): FormGroup {
+    return new FormGroup({
+        name: new FormControl(‘’, Validators.required),
+        inputs: new FormArray([this.createInputFormGroup()])
+    }); 
+}
+
+// funkcja służaca do generowania kolejnego wiersza
+createInputFormGroup() {
+    return new FormGroup({
+        name: new FormControl(‘’, [Validators.required, validateSpecialChars]),
+        label: new FormControl(‘’, Validators.required),
+        type: new FormControl(this.inputTypes.text, Validators.required),
+    });
+}
+
+// funckja służaca do dodania kolejnego wiersza do modelu
+addRow() { this.inputs.push(this.createInputFormGroup()); }
+```
+*rys. 6-22 Funkcje służące do zbudowania formularza oraz do dodawania kolejnych wierszy*
+
+Po zaprojektowaniu oraz napisaniu logiki komponentu odpowiedzialnego za zarządzanie
+szablonem formularza, następnym krokiem jest napisania logiki widoku. Widok ten, na podstawie
+modelu dostępnego w komponencie, wyświetli dostępne pola. Logika widoku została
+przedstawiona na rys. 6-23.
+
+```
+<inz-form [form]=’inputs.controls[i]’ *ngFor=”let control of inputs.controls;let i=index”>
+    <div class=”row”>
+        <div class=”col-12 col-md-4”>
+            <inz-input controlName=”name”></inz-input>
+        </div>
+        <div class=”col-12 col-md-4”>
+            <inz-input controlName=”label”></inz-input>
+        </div>
+        <div class=”col-12 col-md-3”>
+            <inz-input controlName=”type” type=”select” [options]=”inputTypes”></inz-input>
+        </div>
+        <div class=”col-12 col-md-1 text-right”>
+            <button (click)=”removeRow(i)” [disabled]=”hasBeenSaved” class=”btn btn-danger”>
+                <span class=”fa fa-times”></span> 
+            </button>
+        </div>
+    </div>
+</inz-form>
+
+<!--- pozostała część widoku -->
+<button (click)=”addRow”>Add new field</button>
+
+<!--- pozostała część widoku -->
+<button (click)=”save()”>Save form</button>
+```
+*rys. 6-23 Fragment szablonu komponentu odpowiedzialny za wyświetlanie poszczególnych wierszy formularza*
+
+Oprócz samej logiki odpowiedzialnej za zarządzaniem modelem oraz widokiem
+szablonu, należy jeszcze umożliwić wysłanie schematu formularza na serwer w celu jego zapisania
+oraz późniejszego wczytania do pamięci aplikacji. W tym celu została utworzona specjalna funkcja
+w komponencie, opisana na rys. 6-24. Funkcja ta wykonuje się po kliknięciu na stronie w przycisk
+„Save form”.
+
+```
+save() {
+    // pobranie wartości z formularza
+    const formData = this.formGroup.getRawValue();
+
+    // podpięcie schematu formularza do folderu
+    formData.folder = this.folderId;
+
+    // wysłanie formularza na serwer
+    this.formService.addNewForm(formData).subscribe(savedModel => {
+        this.formNotificationService.formHasBeenSaved();
+        this.hasBeenSaved=true; }, error => {this.formNotificationService.formExist(); }
+    );
+}
+```
+*rys. 6-24 Funkcja służąca do zapisania utworzonego schematu formularza*
+
+Widok graficzny zaprojektowanego komponentu, odpowiedzialnego za generowanie
+formularzy, został przedstawiony na rys. 6-25.
+
+![Widok utworzonego generatora do tworzenia własnych formularzy](./assets/images/widok-generatora.png)
+*rys. 6-25 Widok utworzonego generatora do tworzenia własnych formularzy [źródło własne]*
+
+### <a name="tworzenie-widoku-do-uzupełniania-formularza"></a> Tworzenie widoku do uzupełniania formularza
+
+Utworzony widok, po uruchomieniu, pobiera dane z serwisu na postawie obecnej ścieżki
+w przeglądarce. Napisana funkcja, której zadaniem jest pobranie danych z serwisu oraz
+zmapowanie ich na model do budowania formularza, wykorzystana w komponencie, została
+przedstawiona na rys. 6-26.
+
+```
+ngOnInit() {
+    this.activatedRoute.paramMap // pobranie parametrów ze ścieżki
+        .subscribe(value => {
+            this.formId = value.get(‘formId’);
+            this.recordId = value.get(‘recordId’);
+            // ściągnięcie oraz zbudowanie formularza
+            this.fetchFormInputsAndBuild();
+        });
+}
+
+// funkcja odpowiedzialna za zbudowanie formularza na podstawie danych z serwera
+private buildForm(initValues: FormRecordDTO = {values: {}}) {
+    const temp = {};
+    this.formInputs.forEach(input => {
+        const initValue = initValues.values[input.name] ?
+        initValues.values[input.name] : null;
+        temp[input.name] = new FormControl(initValue);
+    });
+    this.formGroup = new FormGroup(temp);
+}
+```
+*rys. 6-26 Funkcje odpowiedzialne za pobranie schematu formularza z serwera oraz zmapowanie otrzymanego modelu na model do tworzenia formularza*
+
+Po pobraniu danych z serwisu, kolejnym krokiem jest wygenerowanie formularza.
+Fragment szablonu komponentu odpowiedzialnego za generowanie formularza na podstawie
+dostarczonego modelu została przedstawiona na rys. 6-27.
+
+```
+<inz-form [form]=”formGroup”>
+    <inz-input *ngFor=”let input of formInputs” [label]=”input.label”
+        [type]=”input.type” [controlName]=”input.name”></inz-input>
+</inz-form>
+```
+*rys. 6-27 Fragment szablonu HTML odpowiedzialnego za generowanie formularza na podstawie dostarczonego modelu*
+
+W celu zapisania danych na serwerze, które zostały wpisane do formularza, została
+napisana funkcja, która pobiera wpisane dane, po czym wywołuje odpowiednią funkcję z serwisu,
+odpowiedzialnego za komunikację z serwerem, w zależności od tego, czy dany model posiada
+zdefiniowany identyfikator. Funkcja ta została przedstawiona na rys. 6-28.
+
+```
+save() {
+    // pobranie danych z formularza
+    const formData = this.formGroup.getRawValue();
+
+    // jeżeli jest podane ID rekordu - zaktualizuj
+    if (this.recordId) {      
+        this.updateFormRecord( { _id: this.recordId, values: formData } );
+    } else {
+        // w przeciwnym wypadku utwórz nowy
+        this.createFormRecord(formData);
+    }
+}
+```
+*rys. 6-28 Funkcja odpowiedzialna za wysłanie uzupełnionego formularza na serwis internetowy*
+
+Układ graficzny komponentu, odpowiedzialnego za dodawanie kolejnych rekordów,
+został przedstawiony na rys. 6-29.
+
+![Układ graficzny komponentu do dodawania kolejnych rekordów do utworzonego wcześniej formularza](widok-dodawania-kolejnych-redorkow-do-formularza.png)
+*rys. 6-29 Układ graficzny komponentu do dodawania kolejnych rekordów do utworzonego wcześniej formularza [źródło własne]*
+
+## <a name="projektowanie-panelu-glownego-strony"></a>  Projektowanie panelu głównego strony
+
+Panel główny aplikacji internetowej ma oferować użytkownikowi końcowemu zestaw
+narzędzi, za pomocą których będzie mógł zarządzanie strukturą folderów. Oznacza to, że musi
+posiadać możliwość dodawania folderu głównego, folderu podrzędnego, usunięcie wybranego
+folderu oraz dodatkowo umożliwić edytowanie jego nazwy w razie popełnienia błędu podczas
+wpisywania nazwy. W panelu głównym ma się również znaleźć miejsce do wyświetlania
+zawartości danego formularza, przypisanego do określonego folderu. Aby sprostać tym
+wymaganiom strona zostanie podzielona wertykalnie na dwie części. Po lewej zostanie
+wyświetlona struktura folderów, natomiast po prawej zawartość formularza. Zaprojektowany
+widok panelu głównego został przedstawiony na rys. 6-30.
+
+![Zaprojektowany widok panelu głównego](./assets/images/projektowanie-panelu-glownego.png)
+*rys. 6-30 Zaprojektowany widok panelu głównego [źródło własne]*
+
+### <a name="implementacja-modulu-do-zarzadzania-folderami"></a> Implementacja modułu do zarządzania folderami
+
+Do zarządzania strukturą folderów został utworzony specjalny moduł o nazwie
+„FolderTreeModule ”. Moduł ten składa się z trzech komponentów oraz jednego serwisu:
+* FolderNodeComponent - komponent ten odpowiedzialny jest za odtworzenie
+struktury folderów na podstawie dostarczonego modelu danych. Model jaki został
+napisany, na podstawie którego tworzona jest struktura folderu został przedstawiona
+na rys. 6-31.
+* FolderNodeContentComponent - komponent ten odpowiedzialny jest za
+wyświetlenie danego folderu.
+* FolderNodeEditComponent - komponent ten przechowuje formularz, który może
+posłużyć do utworzenia lub edycji danego folderu.
+* FolderTreeService - serwis ten odpowiedzialny jest za przechowywanie informacji o
+aktualnie zaznaczonym folderze, o jego stanie (informacje ze są zapisywane w
+pamięci podręcznej przeglądarki) oraz za propagowanie informacji o tym, że dany
+folder został odznaczony lub zaznaczony.
+
+```
+export class Folder {
+    id = ‘’;
+    children: Folder[];
+    name = ‘’;
+    parent? = ‘’;
+    isOpen = false;
+}
+```
+*rys. 6-31 Model, na podstawie którego tworzona jest hierarchiczna struktura folderów*
+
+### <a name="wyswietlania-zawartosci-wybranego-folderu"></a> Wyświetlania zawartości wybranego folderu
+
+Do wyświetlania zawartości zaznaczonego folderu zostały utworzone dwa moduły:
+* FormsDisplayModule – moduł ten odpowiedzialny jest za wyświetlanie zawartości
+folderu, gdy dany formularz jest formularzem utworzonym przez użytkownika (nie
+jest predefiniowany przez samą aplikację). Moduł ten składa się z jednego
+komponentu „FormsDisplayComponent”.
+* MachineToolDisplayModule – moduł odpowiedzialny za wyświetlanie zawartości,
+gdy dany formularz jest formularzem predefiniowanym przez aplikację. Oznacza to,
+że serwis internetowy nie posiada żadnych informacji o tym, jak wygląda struktura
+formularza. Wszystkie te informacje przechowywane są w samej aplikacji klienckiej
+(takim formularzem jest formularz o nazwie „Machine Tool Specification”). Moduł
+ten składa się z jednego komponentu „MachineToolDisplayComponent”.
+
+### <a name="implementacja-funkcji-do-generowania-xmla"></a>  Implementacja funkcji do generowania XML’a
+
+W celu wygenerowania pliku XML z zawartością danego formularza należy
+zaimplementować algorytm (konwerter), który zamieni obiekt JavaScript na plik XML’owy. W
+związku z tym, że w Internecie istnieje już darmowe narzędzie, nie ma potrzeby pisać własnego
+algorytmu. Narzędzie, jakie zostało wykorzystane w owym celu nosi nazwę „xml-js”. Przykład
+zastosowania narzędzia do konwertowania do formatu XML’a został przedstawiony na rys. 6-32.
+
+```
+import * as converter from ‘xml-js’;
+
+const js = {
+    obrabiarka : {
+    nazwa: „obrabiarka”,
+    rozmiar: [323,656, 233] }
+};
+const result = converter.js2xml(xml, {compact: true, spaces: 4});
+
+// wynik działania
+<obrabiarka>
+    <nazwa>obrabiarka</nazwa>
+    <rozmiar>323</rozmiar>
+    <rozmiar>656</rozmiar>
+    <rozmiar>233</rozmiar>
+</obrabiarka>
+```
+*rys. 6-32 Przykład działania biblioteki do konwertowania obiektu JavaScript do formatu XML*
+
+### <a name="implementacja-panelu-głównego"> Implementacja panelu głównego
+
+W związku z tym, że zostały już utworzone wszystkie moduły wymagane do utworzenia
+strony głównej, można przystąpić do pisania modułu odpowiedzialnego za wyświetlanie panelu.
+Moduł ten składa się z modułów opisanych w poprzednich podrozdziałach, z komponentu
+„DashboardComponent” oraz odpowiednich serwisów. Najważniejsze fragmenty pliku HTML,
+komponentu „DashboardComponent”, zostały przedstawione na rys. 6-34.
+
+```
+<div class=”folders border border-left-0 border-top-0 border-bottom-0 border-dark”>
+    <div class=”folders-actions”>
+        <div>
+            <button (click)=”addNewCollection()” title=”Add root folder”
+                     class=”btn btn-outline-secondary btn-sm mr-1”>
+                <span class=”fa fa-folder”></span>
+            </button>
+            <!-- Pozostałe przycisku służące do zarządzania strukturą folderów -->
+        </div>
+    </div>
+
+    <!--użycie komponentu do wyświetlania struktury folderów-->
+    <inz-folder-node [folders]=”tree”></inz-folder-node>
+</div>
+
+<div class=”folder-content” *ngIf=”hasSelectedFolderForm”>
+    <!-- użycie komponentów do wyświetlania zawartości zaznaczonego folderu -->
+    <ng-container *ngIf=”!selectedForm.predefined”>
+        <inz-forms-display [formId]=”selectedFolderId”></inz-forms-display>
+        <!-- pozostała część kodu -->
+    </ng-container>
+    <ng-container *ngIf=”selectedForm.predefined”>
+        <inz-machine-tool-display [formId]=”selectedFolderId”></inz-machine-tool-display>
+        <!-- pozostała część kodu -->
+    </ng-container>
+</div>
+```
+*rys. 6-33 Najważniejsze fragmenty kodu służące do wyświetlania wyglądu panelu głównego aplikacji*
+
+Ze względu na to, że model danych, który jest pobierany z serwisu różni się od modelu,
+jaki został zaprojektowany w komponencie, należy przeprowadzić konwertowanie formatu
+danych. Do tego działania została utworzona funkcja o nazwie „convertFolderToReadToFolderModel”.
+
+@Component({
+    selector: ‘inz-dashboard’,
+    templateUrl: ‘./dashboard.component.html’,
+    styleUrls: [’./dashboard.component.sass’]
+})
+export class DashboardComponent implements OnInit {
+    public tree: Folder[] = [];
+    contructor(private folderService: FolderService){}
+
+    // pozostała część logiki komponentu
+    // (...)
+
+    // pobranie danych z serwisu
+    private fetchFolderTree() {
+        this.folderService.getFolderTree()
+        .pipe( map(items => convertFolderToReadToFolderModel(items)) )
+        .subscribe(folders => this.tree = folders);
+    }
+}
+*rys. 6-34 Fragment komponentu panelu głównego aplikacji*
+
+Układ graficzny, zaimplementowanego panelu głównego, został przedstawiony na rys. 6-36.
+
+![Wygląd zaimplementowanego panelu głównego](./assets/images/wyglad-panelu-glownego.png)
+*rys. 6-35 Wygląd zaimplementowanego panelu głównego [źródło własne]*
+
+## <a name="utworzenie-modulu-glownego"> Utworzenie modułu głównego
+
+Każda aplikacja Angular’owa musi składać się z jednego moduły głównego. Moduł ten
+jest odpowiedzialny za import utworzonych modułów, komponentów oraz serwisów. Oprócz tego,
+w module głównym definiuje się korzeń nawigowania po aplikacji. Podgląd napisanego modułu
+głównego został przedstawiony na rys. 6-23.
+
+```
+@NgModule({
+    declarations: [ AppComponent ],
+    imports:[SharedModule, CoreModule, LayoutModule, AppRoutingModule],
+    bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+*rys. 6-36 Główny moduł aplikacji importujący pozostałe moduły*
+
+„AppRoutingModule” jest to moduł odpowiedzialny za zdefiniowanie głównego
+schematu nawigowania po aplikacji w zależności od aktualnej ścieżki w przeglądarce. Dodatkowo
+moduł ten posiada zaimplementowany serwis „AuthGuardService”, który odpowiada za
+sprawdzenie, czy osoba korzystająca z aplikacji przeszła proces uwierzytelniania. Jeżeli nie,
+użytkownik zostanie przekierowany na stronę logowania. Podgląd schematu nawigowania po
+aplikacji został przedstawiony na rys. 6-37.
+
+```
+const routes: Routes = [ 
+    {
+        path: ‘dashboard’,
+        loadChildren: ‘./dashboard/dashboard.module#DashboardModule’,
+        canActivate: [AuthGuardService]
+    },
+    {
+        path: ‘forms’,
+        loadChildren: ‘./forms/forms.module#FormsModule’,
+        canActivate: [AuthGuardService]
+    },
+    {
+        path: ‘auth’,
+        loadChildren: ‘./auth/auth.module#AuthModule’,
+    },
+    {
+        path: ‘**’,
+        redirectTo: ‘/dashboard’
+    },
+];
+```
+*rys. 6-37 Konfiguracja głównej nawigacji po aplikacji*
+
+## <a name="przygotowanie-aplikacji-do-uruchomienia"> Przygotowanie aplikacji do uruchomienia
+
+Aby móc uruchomić aplikację należy mieć zainstalowany program Angular CLI. Program
+ten umożliwia uruchomienie aplikacji Angular’owej w jednej z dwóch wersji: wersji
+deweloperskiej od produkcyjnej (docelowo aplikacja zostanie dostarczona w wersji produkcyjnej).
+
+Wersja deweloperska to wersja, w której cała aplikacja jest budowana, a następnie
+uruchamiany jest serwer, który przechowuje w pamięci komputera zbudowane pliki. Dodatkowo
+serwer ten nasłuchuje pliki źródłowe i automatycznie przebuduje aplikację po każdej zmianie.
+Takie działanie powoduje, że rozwijanie aplikacji jest względnie szybkie, jednak wiąże się z
+użyciem większej ilości zasób komputera w porównaniu z wersją produkcyjną.
+
+Wersja produkcyjna to wersja, gdzie cała aplikacja jest budowana, a następnie
+dostarczana w postaci najczęściej pojedynczego pliku. W tej wersji programista musi sam zadbać
+o serwer, który będzie dostarczał pliki źródłowe przeglądarce internetowej. Ze względu na to, że
+zbudowane pliki są przechowywany na dysku, a nie w pamięci komputera, powoduje to mniejsze
+zużycie zasób w porównaniu z wersją deweloperską. Proces budowania aplikacji w wersji
+produkcyjnego został przedstawiony na rys. 6-38.
+
+```
+# instalacja wymaganych pakietów
+$ npm install
+
+# zbudowanie aplikacji
+$ zbudowanie aplikacji
+```
+*rys. 6-38 Lista komend potrzebnych do zbudowania aplikacji front-end’owej*
+
+Kolejnym krokiem jest uruchomienie serwera, którego zadaniem będzie udostępnianie
+zbudowanych plików. W tym celu został wykorzystany program Nginx, który został odpowiednio
+skonfigurowany. Napisana konfiguracja została przedstawiona na rys. 6-39.
+
+```
+server {
+    listen 80;
+    sendfile on;
+    root /inz-front-end;
+    location / {
+        try_files $uri $uri/ /index.html =404;
+    }
+}
+```
+*rys. 6-39 Konfiguracja programu Nginx do udostępniania plików zbudowanej aplikacji*
+
+## <a name="ograniczenia"> Ograniczenia
+
+Angular posiada wsparcie tylko dla najnowszych wersji przeglądarek. Oznacza to, że
+osoba korzystająca ze starszych lub nieobsługiwanych przeglądarek może nie być wstanie
+otworzyć strony, lub wyświetlana strona internetowa nie będzie działać, lub wyświetlać się
+poprawnie. Lista przeglądarek, które najprawdopodobniej są wstanie uruchomić napisaną
+aplikację została przedstawiona w tab. 6-1.
+
+// ToDo: Add table with supported browsers
+
+Kolejnym ograniczeniem jest dla aplikacji jest minimalna rozdzielczość ekranu
+urządzenia, na którym dana strona zostanie wyświetlona. Napisana aplikacja została
+zaprojektowania z myślą o ekranach komputerów stacjonarnych oraz laptopach, których szerokość
+wynosi co najmniej 1000px. Poniżej też rozdzielczości niektóre postronny aplikacji będą
+wyświetlać się nieprawidłowo uniemożliwiając tym samym swobodne korzystanie z aplikacji.
