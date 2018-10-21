@@ -42,31 +42,31 @@
     8. [UTWORZENIE MODUŁU GŁÓWNEGO](#utworzenie-modułu-glownego)
     9. [PRZYGOTOWANIE APLIKACJI DO URUCHOMIENIA](#przygotowanie-aplikacji-do-uruchomienia)
     10. [OGRANICZENIA](#ograniczenia)
-7. KONFIGUROWANIE SERWISU PROXY 
-    1. OMÓWIENIE SERWISU N GINX
-    2. KONFIGURACJA N GINX 
-8. PRZYGOTOWANIE SYSTEMU APLIKACJI DO URUCHOMIENIA 
-    1. DOCKER
-    2. PLIK KONFIGURACYJNY DO BUDOWANIA OBRAZÓW D OCKER'OWYCH 
-    3. AUTOMATYCZNE BUDOWANIE ORAZ UDOSTĘPNIANIE OBRAZÓW 
-    4. COMPOSE – ZDEFINIOWANE PLIKU KONFIGURACYJNEGO
-    5. ZARZĄDZANIE SERWISAMI 
-9. TESTOWANIE APLIKACJI
-    1. ZALOGOWANIE SIĘ DO APLIKACJI 
-    2. UTWORZENIE NOWEGO FOLDERU GŁÓWNEGO 
-    3. UTWORZENIE FORMULARZA "MACHINE TOOL SPECIFICATION"
-    4. DODANIE NOWYCH REKORDÓW DO FORMULARZA
-    5. GENEROWANIE PLIKU XML 
-    6. TWORZENIE WŁASNEGO FORMULARZA 
-    7. PODGLĄD ZAWARTOŚCI BAZY DANYCH 
-10. STATYSTYKI ORAZ WYKORZYSTANE NARZĘDZIA 
-11. PODSUMOWANIE 
-12. DYSKUSJA 
-13. SUMMARY
-14. LITERATURA
-15. SPIS ILUSTRACJI
-16. SPIS TABEL 
-17. ANEKS 
+7. [KONFIGUROWANIE SERWISU PROXY](#konfigurowanie-serwisu-proxy)
+    1. [OMÓWIENIE SERWISU NGINX](#omowienie-serwisu-nginx)
+    2. [KONFIGURACJA NGINX](#konfiguracja-nginx)
+8. [PRZYGOTOWANIE SYSTEMU APLIKACJI DO URUCHOMIENIA](#przygotowanie-systemu-aplikacji-do-uruchomienia)
+    1. [DOCKER](#docker)
+    2. [PLIK KONFIGURACYJNY DO BUDOWANIA OBRAZÓW DOCKER'OWYCH](#plik-konfiguracyjny-do-budowania-obrazow-docker-owych)
+    3. [AUTOMATYCZNE BUDOWANIE ORAZ UDOSTĘPNIANIE OBRAZÓW](#automatyczne-budowanie-oraz-udostepnianie-obrazow)
+    4. [COMPOSE – ZDEFINIOWANE PLIKU KONFIGURACYJNEGO](#compose-zdefiniowane-pliku-konfiguracyjnego)
+    5. [ZARZĄDZANIE SERWISAMI](#zarzadzanie-serwisami)
+9. [TESTOWANIE APLIKACJI](#testowanie-aplikacji)
+    1. [ZALOGOWANIE SIĘ DO APLIKACJI](#zalogowanie-się-do-aplikacji)
+    2. [UTWORZENIE NOWEGO FOLDERU GŁÓWNEGO](#utworzenie-nowego-folderu-glownego)
+    3. [UTWORZENIE FORMULARZA "MACHINE TOOL SPECIFICATION"](#utworzenie-formularza-machine-tool-specification)
+    4. [DODANIE NOWYCH REKORDÓW DO FORMULARZA](#dodanie-nowych-rekordow-do-formularza)
+    5. [GENEROWANIE PLIKU XML](#generowanie-pliku-xml)
+    6. [TWORZENIE WŁASNEGO FORMULARZA](#tworzenie-wlasnego-formularza)
+    7. [PODGLĄD ZAWARTOŚCI BAZY DANYCH](#podglad-zawartosci-bazy-danych)
+10. [STATYSTYKI ORAZ WYKORZYSTANE NARZĘDZIA](#statystyki-oraz-wykorzystane-narzedzia)
+11. [PODSUMOWANIE](#podsumowanie)
+12. [DYSKUSJA](#dyskusja)
+13. [SUMMARY](#summary)
+14. [LITERATURA](#literatura)
+15. [SPIS ILUSTRACJI](#spis-ilustracji)
+16. [SPIS TABEL](#spis-tabel)
+17. [ANEKS](#aneks)
 
 # <a name="cel-i-zakres-pracy"></a> Cel i zakres pracy
 
@@ -2410,3 +2410,1316 @@ urządzenia, na którym dana strona zostanie wyświetlona. Napisana aplikacja zo
 zaprojektowania z myślą o ekranach komputerów stacjonarnych oraz laptopach, których szerokość
 wynosi co najmniej 1000px. Poniżej też rozdzielczości niektóre postronny aplikacji będą
 wyświetlać się nieprawidłowo uniemożliwiając tym samym swobodne korzystanie z aplikacji.
+
+# <a name="konfigurowanie-serwisu-proxy"></a> Konfigurowanie serwisu proxy
+
+## <a name="omowienie-serwisu-nginx></a> Omówienie serwisu Nginx
+
+Nginx jest to oprogramowanie o otwartym kodzie źródłowym, które początkowo miało
+służyć tylko jako serwer WWW, jednak z czasem, zaprojektowana skalowalna architektura
+serwisu okazała się idealna do innych zadań internetowych. Obecnie Nginx może służyć jako
+serwis WWW, jako serwis proxy (otwarte oraz odwrócone), jako serwis do równoważenia
+obciążenia (load balancing) oraz wiele innych [50].
+
+## <a name="konfiguracja-nginx"></a> Konfiguracja Nginx
+
+W celu uzyskania pożądanego działania, Nginx, który ma zostać uruchomiony jak serwis
+proxy, musi zostać odpowiednio skonfigurowany. Robi się to poprzez edycję odpowiedniego
+pliku, który można znaleźć w miejscu, w których Nginx został zainstalowany. Domyślna ścieżka,
+w której znajduje się plik konfiguracyjny, dla systemu Linux, została podana na rys. 7-1.
+
+```
+/etc/nginx/conf.d/default.conf
+```
+*rys. 7-1 Ścieżka, w której znajduje się plik konfiguracyjny programu Nginx*
+
+Zawartość pliku konfiguracyjnego, która została napisany na potrzeby niniejszej pracy
+dla programu Nginx z opisem najważniejszych konfiguracji została przedstawiony na rys. 7-2.
+
+```
+server {
+    listen 80;
+    location / {
+        proxy_pass http://front_end:80;
+    }
+
+    location /api {
+        rewrite ^/api(.*) $1 break;
+        proxy_pass http://back_end:3000;
+    }
+}
+```
+*rys. 7-2 Plik konfiguracyjny serwisu Nginx z opisem najważniejszych konfiguracji*
+
+# <a name="przygotowanie-systemu-aplikacji-do-uruchomienia"></a> Przygotowanie systemu aplikacji do uruchomienia
+
+## <a name="docker"></a> Docker
+
+Docker to narzędzie zaprojektowane w celu ułatwienia tworzenia, wdrażania i
+uruchamiania aplikacji z wykorzystaniem obrazów Docker’owych. Obraz Docker’owy umożliwia
+programiście skompletowanie aplikacji z wszystkimi wymaganymi pakietami, bibliotekami oraz
+innymi zależnościami, które są potrzebne do uruchomienia aplikacji, a następnie połączenie ich
+jako jednej paczki. Dzięki takiemu zabiegowi twórca oprogramowania może mieć pewność, że
+aplikacja będzie działała na dowolnym innym komputerze z zainstalowanym narzędziem Docker,
+niezależnie od ustawień systemu, które mogą się różnić od maszyny używanej do pisania i
+testowania kodu [51].
+
+W pewnym sensie narzędzie Docker przypomina maszynę wirtualną. Jednak w
+przeciwieństwie do maszyny wirtualnej, zamiast tworzyć cały wirtualny system operacyjny,
+Docker pozwala aplikacjom używać tego samego jądra systemu, co system, na którym działa i
+wymagać jedynie dostarczenia aplikacji z bibliotekami, które nie są jeszcze zainstalowane na
+komputerze hosta. Daje to znaczny wzrost wydajności i zmniejsza rozmiar aplikacji w porównaniu
+do pełnoprawnej maszyny wirtualnej [52]. Graficzna różnica w architekturze pomiędzy maszyną
+wirtualną a podejściem „Docker’owym” została przedstawiona na rys. 8-1.
+
+![Porównanie architektury maszyny wirtualnej z architekturą kontenerów z wykorzystaniem narzędzia Docker](./assets/images/docker-vs-maszyna-wirtualna.png)
+*rys. 8-1 Porównanie architektury maszyny wirtualnej z architekturą kontenerów z wykorzystaniem narzędzia Docker [źródło własne]*
+
+## <a name="plik-konfiguracyjny-do-budowania-obrazow-docker-owych"></a> Plik konfiguracyjny do budowania obrazów Docker’owych
+
+W celu zbudowania obrazu z aplikacją, należy utworzyć odpowiedni plik o nazwie
+„Dockerfile”. Plik ten, składający się ze specyficznego formatu oraz listy odpowiednich komend,
+musi zawierać wszystkie polecenia, które program powinien wywołać w wierszu poleceń, aby
+przygotować środowisko wymagane do uruchomienia aplikacji oraz komendę do jej włączenia.
+Zawartość pliku „Dockerfile” dla aplikacji back-end’owej, napisanej w owej pracy, została
+przestawiona na rys. 8-2. Analogicznie został również stworzony „Dockerfile” dla aplikacji front-
+end’owej.
+
+```
+# wykorzystanie istniejącego już obrazu
+# (dostępnego w reporytorium doker’owym)
+# z zainstalowanym programem node w wersji 9.8.0
+FROM node:9.8.0
+
+# przygotowanie środowiska pod aplikację poprzez
+# skopiowanie plików źródłowych
+# oraz instalację odpowiednich bibliotek
+WORKDIR /inz/inz-core/
+COPY . .
+RUN npm install—only=production
+
+# komenda udostępniająca podany port
+# na tym porcie nasłuchuje serwis internetowy
+EXPOSE 3000
+
+# komenda uruchamiająca aplikację
+CMD [ „npm”, „run”,”start-prod” ]
+```
+*rys. 8-2 “Dockerfile” dla aplikacji back-end’owej*
+
+W celu ręcznego zbudowania obrazu, na podstawie pliku „Dockerfile” oraz późniejszym
+utworzeniu jego instancji, czyli kontenera, w wierszu poleceń należy wpisać komendy
+przedstawione na rys. 8-3.
+```
+# zbudowanie obrazu pod nazwą inzadrianbury/back-end
+$ docker build -t inzadrianbury/back-end /sciezka/do/pliku/dockerfile/.
+
+# uruchomienie kontenera z wykorzystaniem podanego obrazu
+# ze zmapowanym portem 3000
+$ docker run -p 3000:3000 inzadrianbury/back-end
+```
+*rys. 8-3 Lista komend potrzebnych do zbudowania, a następnie uruchomienia aplikacji back-end’owej z wykorzystaniem narzędzia Docker*
+
+## <a name="automatyczne-budowanie-oraz-udostepnianie-obrazow"></a> Automatyczne budowanie oraz udostępnianie obrazów
+
+Obraz Docker’owy, po zbudowaniu, będzie dostępny tylko na komputerze lokalnym.
+Powoduje to, że osoby trzecie, przed uruchomieniem kontenera będą musiały budować obrazy
+ręcznie, a więc będą musiały również posiadać kod źródłowy aplikacji. W celu uniknięcia owego
+problemu została wykorzystana platforma „Docker Hub”. „Docker Hub” jest to platform oparta
+na chmurze, która pozwala na łączenie się z repozytorium kodu, automatyczne testowanie oraz
+budowania obrazów, a także ich udostępnianie osobom trzecim [53]. Aby móc korzystać w owej
+platformy należy założyć na niej konto, połączyć z odpowiednim repozytorium kodu a następnie
+skonfigurować automatyczne budowanie.
+
+## <a name="compose-zdefiniowane-pliku-konfiguracyjnego"></a> Compose – zdefiniowane pliku konfiguracyjnego
+
+Jeżeli system, który został utworzony, składa się tylko z jednej aplikacji, sam Docker w
+zupełności wystarczy do uruchamiania pojedynczych kontenerów. Jednak z powodu, że system,
+który został utworzony w tej pracy, składa się z czterech aplikacji: aplikacji front-end’owa,
+aplikacji back-end’owa, serwera bazy danych oraz serwera proxy, uruchamianie każdej z osoba
+jest dosyć kłopotliwe, w szczególności, jeżeli trzeba zadbać o ich odpowiednią konfigurację. W
+celu ułatwienia zarządzania uruchamianymi aplikacjami zostało wykorzystane narzędzie
+Compose. Compose jest to narzędzie, które pozwala na definiowanie oraz uruchamianie złożonych
+aplikacji, które zostały dostarczone w formie obrazów [54]. Dzięki temu, definiowanie
+konfiguracji z wieloma kontenerami ogranicza się do jednego pliku, a uruchamianie całego
+systemu wymaga jedynie jednej komendy.
+
+Na potrzeby niniejszej pracy został napisany podstawowy plik konfiguracyjny, służący
+do uruchamiania aplikacji. Plik ten, wraz z opisem poszczególnych ustawień, został przedstawiony
+na rys. 8-4.
+
+```
+version: '3.3'                                          # wersja pliku konfiguracyjnego
+services:                                               # serwisy do uruchomienia
+    proxy:                                              # nazwa serwisu
+        image: nginx:1.12                               # nazwa obrazu do uruchomienia
+        hostname: proxy                                 # domena uruchomionego serwisu
+        container_name: inz_proxy                       # nazwa kontenera
+        ports:                                          # mapowanie portów kontenera na porty hosta
+            - 80:80
+        volumes:                                        # mapowanie scieżek powiędzy hostem a kontenerem
+            - ./volumes/web/nginx.conf:/etc/nginx/conf.d/default.conf
+        restart: always                                 # polityka restartowania kontenera
+        depends_on:                                     # określenie zależności pomiędzy kontenerami
+            - front_end
+            - back_end
+
+    front_end:
+        image: inzadrianbury/front-end:latest
+        hostname: front_end
+        restart: always
+        container_name: inz_front_end
+    
+    back_end:
+        image: inzadrianbury/back-end:latest
+        hostname: back_end
+        restart: always
+        container_name: inz_back_end
+        environment:                                    # ustawienie zmiennych środowiskowych aplikacji
+            - AUTH_USER=${AUTH_USER}
+            - AUTH_PASSWORD=${AUTH_PASSWORD}
+            - DB_NAME=${DB_NAME}
+            - DB_HOST=database
+        depends_on:
+            - database
+
+    database:
+        image: mongo:3.7.1
+        hostname: database
+        restart: always
+        container_name: inz_database
+        volumes:
+            - ./volumes/database/config:/data/configdb
+```
+*rys. 8-4 Plik konfiguracyjny służący do uruchamiania aplikacji przy pomocy narzędzia Compose w języku YAML*
+
+Compose umożliwia wywoływanie zmiennych w pliku konfiguracyjnym za pomocą
+szablonu „${ZMIENNA}”, gdzie w miejsce nazwy “ZMIENNA” należy wpisać zmienną,
+zdefiniowaną w pliku o nazwie „.env”. Zgodnie z tą zasadą został utworzony owy plik o zawartości
+przedstawionej na rys. 8-5.
+
+```
+AUTH_USER=admin
+AUTH_PASSWORD=supertajne
+DB_NAME=paraca_inzynierska
+```
+*rys. 8-5 Zmienne zdefiniowane w pliku „.env”, które są wykorzystywane w pliku konfiguracyjnym*
+
+## <a name="zarzadzanie-serwisami"></a> Zarządzanie serwisami
+
+W celu uruchomienia serwisów, zdefiniowanych w pliku konfiguracyjnym, należy w
+wierszu poleceń przejść do folderu, w którym znajduje się owy plik, a następnie wpisać komendę
+przedstawioną na rys. 8-6. Po jej wykonaniu nastąpi pobieranie brakujących obrazów z
+repozytorium Docker’owego, czyli Docker Hub’a, a następnie ich uruchomienie, wszystko
+zgodnie z zapisaną konfiguracją.
+
+```
+$ docker-compose up -d
+```
+*rys. 8-6 Komenda do uruchamiania kontenerów w tle, zdefiniowanych w pliku konfiguracyjnym*
+
+Lista komend, służących do zarządzania uruchomionymi aplikacji zostały, wraz z opisem,
+przedstawione na rys. 8-7.
+
+```
+# Komenda do zatrzymywania uruchomionych aplikacji w tle
+$ docker-compose stop
+
+# Komenda do aktualizowania obrazów zdefiniowanych w pliku konfiguracyjnym
+$ docker-compose pull
+
+# Usunięcie nieużywanym obrazów docker’owych
+$ docker image prune -a
+```
+*rys. 8-7 Lista komend służących do zarządzania uruchomionymi aplikacjami*
+
+# <a name="testowanie-aplikacji"></a> Testowanie aplikacji
+
+Aby aplikacja istniała w sieci musi być przechowywana na komputerze, który jest
+połączony stałym łączem z Internetem. Komputer ten, musi również być widziany z zewnątrz
+poprzez publiczny adres IP, a to wiąże się z potrzebną odpowiedniej konfiguracji komputera oraz
+sieci. Niestety takie działanie, bez odpowiedniej wiedzy, może być niezwykle trudne. Oprócz tego
+pojawiają się inne problemy, chociażby związane z bezpieczeństwem komputera. Komputer
+niewystarczająco dobrze zabezpieczony może paść ofiarą ataku hackerskiego, co może skutkować
+wyciekiem niepożądanych danych do Internetu. To jeszcze nie wszystkie problemy, komputer,
+który został przeznaczony jako serwer udostępniający daną aplikację musi być zawsze włączony.
+Przerwa w pracy komputera skutkuje brakiem dostępu do aplikacji. Sprzęt ten również musi być
+odpowiednio przystosowany do niecodziennych warunków, czyli nieprzerwanej pracy przez wiele
+miesięcy, a nawet lat [55].
+
+Cała masa problemów związanych z utrzymaniem oraz zarządzaniem systemu powoduje,
+że takie działanie jest niezwykle czasochłonne, a przede wszystkim kosztowe. Związku z tym
+najlepszym rozwiązaniem jest zlecenie takiego zadania specjalistom, poprzez zakupienie usługi
+hostingowej. Hosting to udostępnione miejsce na pracującym bez przerwy, podłączonym do
+Internetu komputerze (zwanym serwerem), dzięki czemu klient nie musi martwić się o
+konfigurację oraz odpowiednie utrzymanie sprzętu [56].
+
+Po zakupieniu takiej usługi, klient ma możliwość połączenia się z serwer za pomocą
+protokołu sieciowego SSH, który umożliwia zarządzanie serwerem. Z powodu, że SSH nie
+udostępnia graficznego interfejsu, wszystkie polecenia należy wykonywać poprzez konsolę [57].
+Istnieje możliwość zainstalowania graficznego interfejsu użytkownika do zarządzania serwerem,
+jednak wiąże się to z użyciem większej ilość mocy obliczeniowej serwera, a co za tym idzie,
+kosztów.
+
+Ze względu na to, że Windows Serwer jest systemem płatnym, ceny hostingów oferujące
+ten system są kilka razy droższe w porównaniu z hostingami z darmowymi systemami z rodziny
+UNIX [58]. Związku z tym, w niniejszej pracy, aplikacja została uruchomiona i testowana na
+hostingu z systemem operacyjnym Ubuntu.
+
+## <a name="zalogowanie-się-do-aplikacji"></a> Zalogowanie się do aplikacji
+
+Aplikacja napisana na potrzeby niniejszej pracy została uruchomiona a następnie
+udostępniona pod domeną [https://demo.inz.adrianbury.pl](https://demo.inz.adrianbury.pl). Po wpisaniu nazwy domeny w
+przeglądarce ukazuję się działająca aplikacja, tak jak pokazano na rys. 9-1.
+
+![Widok aplikacji po uruchomieniu](./assets/images/strona-logowania.png)
+*rys. 9-1 Widok aplikacji po uruchomieniu [źródło własne]*
+
+Po wpisaniu danych do logowania pojawia się panel do zarządzania strukturą folderów
+oraz miejsce, w którym będzie wyświetlana zawartość zaznaczonego folderu. Ze względu na to,
+że do aplikacji nie zostały dodane żadne dane pojawia się komunikat o konieczności zaznaczenia
+folderu w celu wyświetlenia jego zawartości, tak jak pokazano na rys. 9-2.
+
+![Panel główny aplikacji do zarządzania danymi](./assets/images/panel-glowny.png)
+*rys. 9-2 Panel główny aplikacji do zarządzania danymi [źródło własne]*
+
+## <a name="utworzenie-nowego-folderu-glownego"></a> Utworzenie nowego folderu głównego
+
+W celu dodania folderu głównego został kliknięty przycisk z ikoną folderu, znajdujący
+się w lewym, górnym rogu, po czym pojawiło się okno z polem tekstowym, do którego został
+wpisany tekst „Obrabiarki”. Wynik wymienionych działań został przedstawiony na rys. 9-3. Po
+zatwierdzeniu zmian, poprzez kliknięcie w przycisk „Add” pojawił się komunikat, że operacja
+przebiegła pomyślnie i folder został utworzony.
+
+![Dodanie nowego folderu głównego](./assets/images/dodawanie-folderu.png)
+*rys. 9-3 Dodanie nowego folderu głównego [źródło własne]*
+
+## <a name="utworzenie-formularza-machine-tool-specification"></a> Utworzenie formularza „Machine tool specification”
+
+Po zaznaczeniu folderu “Obrabiarki”, który został utworzony w poprzednim kroku,
+pojawiała się informacja, że do folderu nie został przypisany żaden formularz. W celu przypisania
+formularza został kliknięty przycisk „Create machine tool specification form”, jak tak pokazano
+na rys. 9-4.
+
+![Dodanie formularza Machine tool specification](./assets/images/dodanie-formularza.png)
+*rys. 9-4 Dodanie formularza “Machine tool specification” [źródło własne]*
+
+Po kliknięciu przycisku nastąpiła zmiana widoku z informacją, że dany formularz nie
+zawiera żadnych rekordów. Widok, który został wyświetlony został przedstawiony na rys. 9-5.
+
+![Widok formularza, który nie zawiera żadnych rekordów](./assets/images/pusta-tabela.png)
+*rys. 9-5 Widok formularza, który nie zawiera żadnych rekordów [źródło własne]*
+
+## <a name="dodanie-nowych-rekordow-do-formularza"></a> Dodanie nowych rekordów do formularza
+
+W celu dodania nowego rekordu do bazy danych został kliknięty przycisk „Add new
+record”. Po jego naciśnięciu nastąpiło przekierowanie na nową podstronę z formularzem do
+uzupełnienia. Formularz został uzupełniony danymi, które zostały dołączone wraz z normą ISO.
+Po uzupełnieniu, formularz został zapisany za pomocą dostępnego przycisku „Save”
+umieszczonego na samym dole strony. Wygląd formularza po jego uzupełnieniu został
+przedstawiony na rys. 9-6. Czynność ta została analogicznie powtórzona dla drugiego rekordu.
+Dane jakie zostały wpisane do formularzy zostały dołączone do pracy w formie załącznika.
+
+![Uzupełniony formularz „Machine Tool Specification” przykładowymi danymi](./assets/images/uzupelniony-formularz-machine-tool-specification.png)
+*rys. 9-6 Uzupełniony formularz „Machine Tool Specification” przykładowymi danymi [źródło własne]*
+
+## <a name="generowanie-pliku-xml"></a> Generowanie pliku XML,
+
+Wszystkie formularze, jakie zostały utworzone, są wyświetlane w postaci listy, w panelu
+głównym. Na postawie wpisanych danych istnieje możliwość generowania pliku XML. Po
+wciśnięciu przycisku z ikoną „</>” pojawia się okno w celu podania miejsca, gdzie dany plik ma
+zostać zapisany. Wymienione czynności zostały przedstawiony na rys. 9-7.
+
+![Generowanie pliku XML na podstawie utworzonego formularza](./assets/images/generowanie-xmla-z-formularza.png)
+*rys. 9-7 Generowanie pliku XML na podstawie utworzonego formularza [źródło własne]*
+
+Plik ten, po pobraniu a następnie otworzeniu przez edytor tekstowy, zawiera dane, które
+zostały podane w formularzu w formacie XML. Fragment wygenerowanego pliku XML został
+przedstawiona na rys. 9-8. Zawartość całego, pobranego dokumentu została dołączona do pracy w
+postaci załącznika.
+
+```
+<?xml version=”1.0” encoding=”UTF-8”?>
+<machine_tool_specification>
+<description>Multi tasking machine requirement data for sample</description>
+<machine_class>MULTI_TASKING_MACHINE</machine_class>
+<device_id>
+<id>X06-6438</id>
+<manufacturer>KOMMA</manufacturer>
+<date_manufactured>2011,30,4</date_manufactured>
+</device_id>
+<machining_capabilities>
+<capability>TURNING_CAPABILITY</capability>
+<machining_accuracy />
+(...)
+```
+*rys. 9-8 Fragment wygenerowanego pliku XML*
+
+## <a name="tworzenie-wlasnego-formularza"></a> Tworzenie własnego formularza
+
+Został dodany nowy folder w celu utworzenia formularza. Po jego zaznaczeniu została
+wybrana opcja „Create custom form”. Wymienione operacie zostały przedstawione na rys. 9-9.
+
+![Tworzenie własnego formularza](./assets/images/proces-tworzenia-wlasnego-formularza.png)
+*rys. 9-9 Tworzenie własnego formularza [źródło własne]*
+
+Kliknięcie w przycisk spowodowało przejście do podstrony, na której znajdują się pola
+służące do generowania formularzy. Formularz został wypełniony danymi przedstawionymi na
+rys. 9-10.
+
+![Uzupełniony formularz do tworzenia formularzy](./assets/images/uzupelniony-formularz-do-tworzenia-formularzy.png)
+*rys. 9-10 Uzupełniony formularz do tworzenia formularzy [źródło własne]*
+
+Formularz został zapisany poprzez przyciśnięcie przycisku „Save form”. Po powrocie na
+stronę główną aplikacji pojawił się komunikat świadczący o tym, że utworzony formularz nie
+zawiera żadnych rekordów (analogicznie jak w przypadku dodania formularza „Machine Tool
+Specification”). Po przyciśnięci przycisku „Add new records” nastąpiło przekierowania na
+podstronę służącą do wypełnienia utworzonego wcześniej formularz. Formularz ten został
+uzupełniony kilkukrotnie przykładowymi danymi, tak jak pokazano na rys. 9-11.
+
+![Uzupełniony przykładowymi danymi własno utworzony formularz](./assets/images/uzupelniony-wlasny-formularz.png)
+*rys. 9-11 Uzupełniony przykładowymi danymi własno utworzony formularz [źródło własne]*
+
+Po wprowadzeniu wszystkich rekordów został wciśnięty przycisk „domku” (znajdujący
+się w lewym górnym rogu), w celu przejścia do strony głównej. Strona główna została
+zaktualizowana o nowo wprowadzone rekordy. Widok panelu głównego po wprowadzeniu danych
+został przedstawiony na rys. 9-11.
+
+![Widok panelu głównego po wprowadzeniu przykładowych danych](./assets/images/panelu-glownego-po-wprowadzeniu-przykladowych-danych.png)
+*rys. 9-12 Widok panelu głównego po wprowadzeniu przykładowych danych [źródło własne]*
+
+## <a name="podglad-zawartosci-bazy-danych"></a> Podgląd zawartości bazy danych
+
+Po przejściu przez wszystkie kroki ostatnim testem weryfikującym poprawność działania
+aplikacji jest bezpośredni podgląd danych zapisanych w bazie. W celu wykonania tego testu będzie
+potrzebny program, który umożliwia wykonanie opisanej czynności. Program jaki został do tego
+wykorzystany do „Robot 3T”. Wynik działania programu przedstawiający zawartość kolekcji
+„folders” został przedstawiony na rys. 9-13, natomiast zawartość kolekcji „forms” została
+przedstawiona na rys. 9-14.
+
+![Podgląd zawartości kolekcji "folders" programem Robo 3T](zawartości-kolekcji-folders.png)
+*rys. 9-13 Podgląd zawartości kolekcji "folders" programem Robo 3T [źródło własne]*
+
+![Podgląd zawartości kolekcji "forms" programem Robo 3T](./assets/images/zawartości-kolekcji-forms.png)
+*rys. 9-14 Podgląd zawartości kolekcji "forms" programem Robo 3T [źródło własne]*
+
+# <a name="statystyki-oraz-wykorzystane-narzedzia"></a> Statystyki oraz wykorzystane narzędzia
+
+Pierwsze linie kodu aplikacji front-end’owej zostały napisane 28 listopada 2017 roku. Od
+tej czasu zostało wprowadzonych 195 zmian w kodzie źródłowym. W przeliczeniu na ilość linii
+kodu daje to 9630 zmian. Pierwsza linia kodu aplikacji back-end’ową została napisana 6 lutego
+2018 roku. Czas pisania aplikacji wynosił 4 miesiące. W czym czasie zostało wprowadzonych 61
+zmian, co przekłada się na 547 linii kodu. Dokładne statystyki napisanych aplikacji zostały
+przedstawiony w tab. 10-1.
+
+*tab. 10-1 Statystyki plików źródłowych napisanych aplikacji*
+// ToDo: Add table with statistic
+
+Oprócz narzędzi opisanych w poprzednich rozdziałach zostały również wykorzystane
+inne, niezwiązane z bezpośrednio z aplikacjami. Te narzędzia to:
+* Platforma GitHub jako repozytorium kodów źródłowych aplikacji - [https://github.com/inzadrianbury](https://github.com/inzadrianbury)
+* Platforma Docker Cloud jako narzędzie do automatycznego budowania obrazów Docker’owych - [https://cloud.docker.com](https://cloud.docker.com)
+* Docker Hub jako repozytorium obrazów Docker’owych - [https://hub.docker.com/u/inzadrianbury](https://hub.docker.com/u/inzadrianbury)
+* WebStorm jako środowisko programistyczne (IDE) - [https://www.jetbrains.com/webstorm](https://www.jetbrains.com/webstorm)
+
+# <a name="podsumowanie></a> Podsumowanie
+
+Rozwój technologii sieciowych, komputerów oraz narzędzi używanych do tworzenia
+oprogramowania spowodował, że na przestrzeni ostatnich kilku lat wykorzystywanie sieci Internet
+uległo radykalnemu zwiększeniu. W wyniku drastycznego rozwój języka JavaScript, dostępnych
+narzędzi oraz przeglądarek internetowych, programiści są wstanie napisać coraz to bardziej
+zaawanasowane aplikacje przeglądarkowe, a dzięki takim narzędziom jak „NodeJS” oraz
+„Electron” mogą, za pomocą jednego języka programowania, napisać zarówno aplikację
+działającą na serwerze, komputerze osobistym jak i przeglądarce. Proste, statyczne strony
+internetowe zamieniły się w aplikacje przeglądarkowe, które umożliwiają operowanie na danych
+z dowolnego urządzenia. Wystarczy posiadać zainstalowaną najnowszą przeglądarką internetową
+oraz dostęp do sieci. Większość dedykowanych programów desktopowych, instalowanych na
+komputerach osobistych, straciły przez to na znaczeniu.
+
+Powstanie narzędzi około deweloperskich, takich jak Docker oraz Compose
+spowodowało, że uruchamianie napisanych aplikacji internetowych stało się niezwykle łatwe.
+Administrator komputera, który jest odpowiedzialny za wdrożenie systemu na serwer produkcyjny
+nie musi posiadać informacji na temat sposobu uruchomienia poszczególnych aplikacji ani
+środowiska. Jego rola ogranicza się tylko i wyłącznie do odpowiedniej konfiguracji pliku
+konfiguracyjnego.
+
+Napisany system aplikacji w niniejszej pracy wykorzystuje wszystkie te narzędzia:
+korzysta z najnowszej wersji języka JavaScript oraz TypeScript, co pozawalało na dużo łatwiejszy
+oraz szybszy rozwój, wykorzystuje platformę NodeJS jako środowisko do uruchomienia aplikacji
+serwerowej (back-end’u) oraz MongoDB, która pozwala na łatwe zarządzanie danymi bez
+konieczności tworzenia z góry zdefiniowanych modeli danych oraz pisania skomplikowanych
+operacji bazodanowych, a dzięki wykorzystaniu narzędzia Docker istnieje możliwość
+uruchomienie całego systemu za pomocą dosłownie jednej komendy.
+
+Technologie jakie zostały wybrane do budowy systemu pozwalają na korzystanie z
+platformy za pomocą dowolnej, najnowszej przeglądarki internetowej. Zarówno z komputerów
+stacjonarnych jak i urządzeń mobilnych, których szerokość ekranu wynosi co najmniej 1000px.
+Użytkownik w aplikacji ma możliwość tworzenia dowolnej hierarchii katalogów z możliwością
+zmiany jego nazwy, może tworzyć własne, proste formularze do zapisywania dowolnych
+informacji, a napisany moduł, implementujący specyfikację normy ISO 14649-201 pozwala na
+wprowadzanie informacji na temat dowolnej obrabiarki dostępnej na rynku. Napisany system
+spełnia wszystkie wymaganie jakie zostały określone w owej pracy.
+
+# <a name="dyskusja"></a> Dyskusja
+
+Czas, jaki został przeznaczony na napisanie systemu aplikacji całkowicie nie spotkał się
+z przewidywaniami. Podczas pisania kodu doszło to zmiany języka programowania, co wiązało
+się z napisaniem całego kodu od początku, bez możliwości wykorzystania napisanych wcześniej
+modułów. Początkowo aplikacja była pisana w języku Python, z wykorzystaniem framework’a
+Django oraz relacyjnej bazy danych MySQL. Pomysł ten okazał się całkowicie nietrafiony z
+powodu bardzo złożonego modelu opisanego w normie ISO 14946-201, który miał zostać
+zaimplementowany. Zostało utworzonych około pięćdziesiąt tabel połączonych złożonymi
+relacjami (rys. 12-1). Spowodowało to, że napisanie funkcji, która miałaby za zadanie zwrócić
+wymagany format danych było praktycznie niemożliwe, nie wspominając już o funkcji, która
+byłaby odpowiedzialna za zapis modelu do bazy.
+
+Aplikacja została napisana z myślą tylko o normie 14649-201, jednak istnieje możliwość
+rozszerzenia o dowolny moduł, jednak wymaga to ingerencji programisty, którego zadaniem
+byłoby dopisanie owego modułu. Dużo lepszym pomysłem jest rozszerzenie obecnego moduły do
+tworzenia formularzy o możliwość dodawania pól powtarzalnych oraz tworzenia formularza
+podrzędnego. Takie działanie spowodowałoby, że aplikacja stałaby się aplikacją uniwersalną, za
+pomocą której istniałaby możliwość tworzenia formularzy w oparciu o dowolną normę.
+Stworzenie takiego modułu wiązałoby się z bardzo dużym nakładem pracy, jednak korzyści byłby
+o wiele większe niż aplikacja w obecnej postaci.
+
+![Schemat bazy danych jaki został utworzony przed porzuceniem projektu](./assets/images/schemat-bazy-sql.png)
+*rys. 12-1 Schemat bazy danych jaki został utworzony przed porzuceniem projektu [źródło własne]*
+
+# <a name="summary"></a> Summary
+
+The development of network technologies, computers and tools used to create software
+has made the use of the Internet a radical increase over the past few years. As a result of the drastic
+development of JavaScript, available tools and browsers, programmers are able to implement
+advanced browser applications and by means of tools such as NodeJS and Electron are able to
+implement, using a single programming language, an application running on a server, a personal
+computer and browser. Simple, static websites have turned into browser applications that allow
+you to manipulate data from any device. All you need to do is have the latest web browser installed
+and access to the network. Most dedicated desktop programs installed on personal computers have
+lost their importance.
+
+The emergence of tools around development sites, such as Docker and Compose, made
+the launch of written applications extremely easy. The computer administrator who is responsible
+for implementing the system on the production server does not need to have information on how
+to run individual applications. Its role is limited only to the appropriate configuration file.
+
+The written application system in this work uses all these tools: it uses the latest version
+of JavaScript and TypeScript, which allows for much easier and faster development, uses the
+NodeJS platform as an environment for running a server application (backend) and MongoDB,
+which allows easy data management without the need to create predefined data models and
+determine their relationships, and thanks to the use of the Docker tool, it is possible to run the
+entire system using literally one command.
+
+Technologies that have been chosen to build the system allow the use of the platform
+using any of the latest web browsers. Both from desktop computers and mobile devices whose
+screen width is at least 1000px. The user in the application has the ability to create any hierarchy
+of directories with the possibility of renaming, can create their own, simple forms to save any
+information, and the module written, implementing the specification of ISO 14649-201 allows you
+to enter information on any machine available on the market. The written system meets all the
+requirements are set in this work.
+
+# <a name="literatura"></a> Literatura
+
+// ToDo: Add table with bibliography
+
+
+# <a name="spis-ilustracji"></a> Spis ilustracji
+
+# <a name="spis-tabel"></a> Spis tabel
+
+# <a name="aneks"></a> Aneks
+
+## <a name="zalacznik-1"></a> Załącznik 1 Wprowadzone dane techniczne obrabiarki wielozadaniowej do aplikacji (rekord „1”)
+
+Niniejszy załącznik przedstawia przekładowe dane techniczne obrabiarki
+wielozadaniowej, które zostały wprowadzone do aplikacji. Na ich podstawie został wygenerowany
+plik XML. Dane te zostały pobrane z normy ISO 14649-201.
+
+```
+ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION((''),'2;1');
+FILE_NAME('turn_spec', '2011-04-30T20:17:50', ('Tanaka'), ('JMTBA'), 'The EXPRESS Data Manager Version 5.00.0305.03 : 9 Feb 2011', ' ', ' ');
+FILE_SCHEMA(('CUTTING_PROCESS_MACHINE_TOOL_SCHEMA'));
+ENDSEC;
+
+DATA;
+#1= MACHINE_TOOL_SPECIFICATION('Multi tasking machine specification data for sample', .MULTI_TASKING_MACHINE.,#2,(#5,#6,#7),$,#8,#9,#13,$,(#19,#23,#26,#29, 32
+,#35,#38,#41,#47,#53,#58,#61,#65,#68,#71,#74));
+#2= DEVICE_ID('X06-6438','MX1600','37-19621201','KOMMA',#3);
+#3= CALENDAR_DATE(2011,30,4);
+#5= MACHINING_CAPABILITY(.TURNING_CAPABILITY.,$,$,$);
+#6= MACHINING_CAPABILITY(.MILLING_CAPABILITY.,$,$,$);
+#7= MACHINING_CAPABILITY(.DRILLING_CAPABILITY.,$,$,$);
+#8= LOCATOR('A-001','B02','C33','D05');
+#9= INSTALLATION(11000.,#10,#11,3500000.,500.,#12);
+#10= MACHINE_SIZE(2470.,4850.,2805.);
+#11= ELECTRICAL(3,22000.,60000.,'50/60Hz','TT',200.);
+#12= HYDRAULICS('water solubility/no water solubility',3500000.,750.);
+#13= NC_CONTROLLER('31i-A','Jmtba co.',.METRIC.,4.,20.,6.,0.001,0.0001,2., ('Canned cycle for drilling and turning', 'Multiple repetitive canned cycle','Multiple
+repetitive canned cycle II'), (.CIRCULAR.,.LINEAR.,.OTHER.),1024,$,$,$,(0.,0.5,1.,1.5,2.),(0.2,0.5,1.),(.TOOL_LENGTH.,.TOOL_RADIUS. ),$,$);
+#19= MACHINE_TOOL_ELEMENT('X1 Linear axis',$,$,(#21));
+#21= LINEAR_AXIS($,'X1',0.,565.,0.003,0.001,600.,0.2,500.,$,$,$);
+#23= MACHINE_TOOL_ELEMENT('X2 Linear axis',$,$,(#24));
+#24= LINEAR_AXIS($,'X2',0.,187.,0.003,0.001,400.,0.2,300.,$,$,$);
+#26= MACHINE_TOOL_ELEMENT('Y Linear axis',$,$,(#27));
+#27= LINEAR_AXIS($,'Y',0.,170.,0.003,0.001,433.,0.2,400.,$,$,$);
+#29= MACHINE_TOOL_ELEMENT('Z1 Linear axis',$,$,(#30));
+#30= LINEAR_AXIS($,'Z1',0.,1050.,0.003,0.001,600.,0.2,500.,$,$,$);
+#32= MACHINE_TOOL_ELEMENT('Z2 Linear axis',$,$,(#33));
+#33= LINEAR_AXIS($,'Z2',0.,1050.,0.003,0.001,600.,0.2,500.,$,$,$);
+#35= MACHINE_TOOL_ELEMENT('Z3 Linear axis',$,$,(#36));
+#36= LINEAR_AXIS($,'Z3',0.,1050.,0.003,0.001,500.,0.2,400.,$,$,$);
+#38= MACHINE_TOOL_ELEMENT('B Rotary axis',$,$,(#39));
+#39= CONTINUOUS_ROTARY($,'B',0.1,0.05,1.,0.02,0.2,$,$,$);
+#41= MACHINE_TOOL_ELEMENT('C1 Rotary axis',$,$,(#42,#44));
+#42= CONTINUOUS_ROTARY($,'C1',0.1,0.05,1.,0.02,0.2,$,$,$);
+#44= WORK_SPINDLE($,15000.,'First Main spindle','KOMMA','JM010',(#46),'A2-5',100.,$,$,$,$);
+#46= SPINDLE_RANGE(0.2,36000.,3.,200.);
+#47= MACHINE_TOOL_ELEMENT('C2 Rotary axis',$,$,(#48,#50));
+#48= CONTINUOUS_ROTARY($,'C2',0.1,0.05,1.,0.02,0.2,$,$,$);
+#50= WORK_SPINDLE($,15000.,'Second Main spindle','KOMMA','JM010',(#52),'A2-5',100.,$,$,$,$);
+#52= SPINDLE_RANGE(0.2,36000.,3.,200.);
+#53= MACHINE_TOOL_ELEMENT('spindle',$,$,(#54));
+#54= TAPERED_SPINDLE($,15000.,'Main spindle','JmtbaCo.','JM010',(#56),'BT40',.T.,'7/24 taper');
+#56= SPINDLE_RANGE(0.2,200.,3.,200.);
+#58= MACHINE_TOOL_ELEMENT('tool_magazine',$,$,(#59));
+#59= TOOL_MAGAZINE($,40.,.T.,90.,120.,300.,8.,.BI_DIRECTIONAL.,$);
+#61= MACHINE_TOOL_ELEMENT('turret',$,$,(#62));
+#62= TURRET($,('turret'),12.,0.,$,$,$);
+#65= MACHINE_TOOL_ELEMENT('Tailstock',$,$,(#66));
+#66= TAILSTOCK($,'First Main spindle','MT#4',100.);
+#68= MACHINE_TOOL_ELEMENT('coolant',$,$,(#69));
+#69= COOLANT($,.FLOOD.,.THRU_SPINDLE.,0.75,$);
+#71= MACHINE_TOOL_ELEMENT('coolant',$,$,(#72));
+#72= COOLANT($,.FLOOD.,.THRU_SPINDLE.,0.75,$);
+#74= MACHINE_TOOL_ELEMENT('tool_breakage',$,$,(#75));
+#75= TOOL_BREAKAGE($,#76);
+#76= DEVICE_ID('H06-6447','YST-100','71-19941126','Jmt electron Co.',#77);
+#77= CALENDAR_DATE(2011,30,4);
+ENDSEC; END-ISO-10303-21;
+```
+## <a name="zalacznik-2"></a> Załącznik 2. Wprowadzone dane techniczne centrum obróbczego do aplikacji (rekord „2”)
+
+Niniejszy załącznik przedstawia przekładowe dane techniczne centrum obróbczego, które
+zostały wprowadzone do aplikacji. Na ich podstawie został wygenerowany plik XML. Dane te
+zostały pobrane z normy ISO 14649-201.
+
+```
+ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION((''),'2;1');
+FILE_NAME('mill_spec', '2011-04-30T20:17:50', ('Tanaka'), ('JMTBA'), EXPRESS Data Manager Version 5.00.0305.03 : 9 Feb 2011', ' ', ' ');
+FILE_SCHEMA(('CUTTING_PROCESS_MACHINE_TOOL_SCHEMA'));
+ENDSEC;
+
+DATA;
+#1= MACHINE_TOOL_SPECIFICATION('Machining Centre specification data for
+sample',.MACHINING_CENTRE.,#2,
+(#5,#6,#7),$,#8,#9,#13,$,(#17,#21,#24,#27,#30,#33,#37,#42,#45,#48));
+#2= DEVICE_ID('X06-6436','STY-5000','37-19621201','Jmtba Co.',#3);
+#3= CALENDAR_DATE(2010,30,4);
+#5= MACHINING_CAPABILITY(.MILLING_CAPABILITY.,$,$,$);
+#6= MACHINING_CAPABILITY(.DRILLING_CAPABILITY.,$,$,$);
+#7= MACHINING_CAPABILITY(.BORING_CAPABILITY.,$,$,$);
+#8= LOCATOR('A-001','B02','C33','D05');
+#9= INSTALLATION(12000.,#10,#11,3500000.,500.,#12);
+#10= MACHINE_SIZE(4500.,2800.,3100.);
+#11= ELECTRICAL(3,22000.,60000.,'50/60Hz','TT',200.);
+#12= HYDRAULICS('water solubility/no water solubility',3500000.,750.);
+#13= NC_CONTROLLER('XSM-401','Jmtba Co.',.INCH_AND_METRIC.,4.,4.,1., 0.001,0.001,1.,('Canned cycle cancel','Drilling cycle'),(.CIRCULAR.,.LINEAR.),$,$,$,$,$,$,(.TOOL_LENGTH.,.TOOL_RADIUS.),$,$);
+#17= MACHINE_TOOL_ELEMENT('X Linear axis',$,$,(#19));
+#19= LINEAR_AXIS($,'X',0.,725.,0.003,0.001,800.,0.2,500.,$,$,$);
+#21= MACHINE_TOOL_ELEMENT('Y Linear axis',$,$,(#22));
+#22= LINEAR_AXIS($,'Y',0.,500.,0.003,0.001,800.,0.2,500.,$,$,$);
+#24= MACHINE_TOOL_ELEMENT('Z Linear axis',$,$,(#25));
+#25= LINEAR_AXIS($,'Z',0.,500.,0.003,0.001,800.,0.2,500.,$,$,$);
+#27= MACHINE_TOOL_ELEMENT('B Rotary axis',$,$,(#28));
+#28= CONTINUOUS_ROTARY($,'B',0.1,0.05,1.,0.02,0.2,$,$,$);
+#30= MACHINE_TOOL_ELEMENT('coolant',$,$,(#31));
+#31= COOLANT($,.FLOOD.,.THRU_SPINDLE.,0.75,$);
+#33= MACHINE_TOOL_ELEMENT('pallet',$,$,(#34));
+#34=(CIRCULAR_WORK_TABLE(485.)ELEMENT_CAPABILITY($)PALLET(.T.,400.,400.,2.,$,45.,45.,$) WORK_TABLE(.F.,300.,.T_SLOT_FIXTURE.,$,#35));
+#35= T_SLOT(5.,15.,80.);
+#37= MACHINE_TOOL_ELEMENT('spindle',$,$,(#38));
+#38= TAPERED_SPINDLE($,15000.,'Main spindle','JmtbaCo.','JM010',(#40),'BT40',.T.,'7/24 taper');
+#40= SPINDLE_RANGE(0.2,200.,3.,200.);
+#42= MACHINE_TOOL_ELEMENT('tool_magazine',$,$,(#43));
+#43= TOOL_MAGAZINE($,36.,.T.,70.,140.,300.,8.,.BI_DIRECTIONAL.,$);
+#45= MACHINE_TOOL_ELEMENT('tool_changer',$,$,(#46));
+#46= TOOL_CHANGER($,'Main spindle',7.,20.);
+#48= MACHINE_TOOL_ELEMENT('tool_breakage',$,$,(#49));
+#49= TOOL_BREAKAGE($,#50);
+#50= DEVICE_ID('H06-6447','YST-100','71-19941126','Jmt electron Co.',#51);
+#51= CALENDAR_DATE(2010,30,4);
+ENDSEC;
+END-ISO-10303-21;
+```
+
+## <a name="zalacznik-3"></a> Załącznik 3. Wygenerowany dokument XML dla obrabiarki wielozadaniowej (rekord „1”)
+
+Niniejszy załącznik przedstawia wygenerowany dokument XML na podstawie
+wprowadzonych danych do aplikacji (na podstawie rekordu „1”). Wygenerowany dokument
+dotyczy obrabiarki wielozadaniowej.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<machine_tool_specification>
+   <description>Multi tasking machine specification data for sample</description>
+   <machine_class>MULTI_TASKING_MACHINE</machine_class>
+   <device_id>
+      <id>X06-6438</id>
+      <model_name>MX1600</model_name>
+      <serial_number>37-19621201</serial_number>
+      <manufacturer>KOMMA</manufacturer>
+      <date_manufactured>2011,30,4</date_manufactured>
+   </device_id>
+   <machining_capabilities>
+      <capability>TURNING_CAPABILITY</capability>
+      <machining_accuracy />
+      <description />
+      <machining_size>
+         <description />
+         <x />
+         <y />
+         <z />
+      </machining_size>
+   </machining_capabilities>
+   <machining_capabilities>
+      <capability>MILLING_CAPABILITY</capability>
+      <machining_accuracy />
+      <description />
+      <machining_size>
+         <description />
+         <x />
+         <y />
+         <z />
+      </machining_size>
+   </machining_capabilities>
+   <machining_capabilities>
+      <capability>DRILLING_CAPABILITY</capability>
+      <machining_accuracy />
+      <description />
+      <machining_size>
+         <description />
+         <x />
+         <y />
+         <z />
+      </machining_size>
+   </machining_capabilities>
+   <measuring_capability>
+      <measuring_accuracy />
+      <description />
+   </measuring_capability>
+   <environmental_evaluation>
+      <evaluation_name />
+      <power_in_idling />
+      <time_for_warming_up />
+   </environmental_evaluation>
+   <location>
+      <business_unit>A-001</business_unit>
+      <plant_location>B02</plant_location>
+      <building>C33</building>
+      <cell>D05</cell>
+   </location>
+   <installation>
+      <weight>11000</weight>
+      <air_pressure_requirement>3500000</air_pressure_requirement>
+      <water_flow_rate>500</water_flow_rate>
+      <size>
+         <machine_length>2470</machine_length>
+         <machine_width>4850</machine_width>
+         <machine_height>2805</machine_height>
+      </size>
+      <electrical>
+         <electric_phase>3</electric_phase>
+         <electric_power>22000</electric_power>
+         <electrical_current>60000</electrical_current>
+         <electrical_frequency>50/60Hz</electrical_frequency>
+         <electrical_grounding>TT</electrical_grounding>
+         <electrical_voltage>200</electrical_voltage>
+      </electrical>
+      <hydraulics>
+         <type_of_hydraulic_oil>water solubility/no water
+solubility</type_of_hydraulic_oil>
+         <pump_outlet_pressure>3500000</pump_outlet_pressure>
+         <capacity_of_hydraulics_tank>750</capacity_of_hydraulics_tank>
+      </hydraulics>
+   </installation>
+   <its_elements>
+      <name>X1 Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>X1</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>565</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>600</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>500</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>X2 Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>X2</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>187</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>400</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>300</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Y Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>Y</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>170</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>433</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>400</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Z1 Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>Z1</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>1050</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>600</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>500</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Z2 Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>Z2</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>1050</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>600</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>500</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Z3 Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>Z3</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>1050</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>500</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>400</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>B Rotary axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>B</axis_name>
+         <displacement_angle_error>0.1</displacement_angle_error>
+         <repeatability_angle_error>0.005</repeatability_angle_error>
+         <rapid_traverse_rotation_feed_rate>1</rapid_traverse_rotation_feed_rate>
+         <minimum_cutting_rotation_feed_rate>0.02</minimum_cutting_rotation_feed_rate>
+         <maximum_cutting_rotation_feed_rate>0.2</maximum_cutting_rotation_feed_rate>
+         <maximum_rotation_acceleration />
+         <maximum_rotation_deceleration />
+         <maximum_rotation_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>C1 Rotary axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>C1</axis_name>
+         <displacement_angle_error>0.1</displacement_angle_error>
+         <repeatability_angle_error>0.05</repeatability_angle_error>
+         <rapid_traverse_rotation_feed_rate>1</rapid_traverse_rotation_feed_rate>
+         <minimum_cutting_rotation_feed_rate>0.02</minimum_cutting_rotation_feed_rate>
+         <maximum_cutting_rotation_feed_rate>0.2</maximum_cutting_rotation_feed_rate>
+         <maximum_rotation_acceleration />
+         <maximum_rotation_deceleration />
+         <maximum_rotation_jerk />
+      </capabilities>
+      <capabilities>
+         <description />
+         <spindle_power>15000</spindle_power>
+         <spindle_name>First Main spindle</spindle_name>
+         <spindle_manufacturer>KOMMA</spindle_manufacturer>
+         <manufacturer_model_designation>JM010</manufacturer_model_designation>
+         <range>
+            <minimum_drive_speed>0.2</minimum_drive_speed>
+            <maximum_drive_speed>36000</maximum_drive_speed>
+            <minimum_drive_torque>3</minimum_drive_torque>
+            <maximum_drive_torque>200</maximum_drive_torque>
+         </range>
+         <spindle_nose_designation>A2-5</spindle_nose_designation>
+         <spindle_bore_diameter>100</spindle_bore_diameter>
+         <round_bar_stock_diameter />
+         <through_hole_diameter />
+         <hex_bar_stock_capacity />
+         <chuck>
+            <description />
+            <minimum_part_diameter />
+            <maximum_part_diameter />
+            <number_of_jaws />
+         </chuck>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>C2 Rotary axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>C2</axis_name>
+         <displacement_angle_error>0.1</displacement_angle_error>
+         <repeatability_angle_error>0.05</repeatability_angle_error>
+         <rapid_traverse_rotation_feed_rate>1</rapid_traverse_rotation_feed_rate>
+         <minimum_cutting_rotation_feed_rate>0.02</minimum_cutting_rotation_feed_rate>
+         <maximum_cutting_rotation_feed_rate>0.2</maximum_cutting_rotation_feed_rate>
+         <maximum_rotation_acceleration />
+         <maximum_rotation_deceleration />
+         <maximum_rotation_jerk />
+      </capabilities>
+      <capabilities>
+         <description />
+         <spindle_power>15000</spindle_power>
+         <spindle_name>Second Main spindle</spindle_name>
+         <spindle_manufacturer>KOMMA</spindle_manufacturer>
+         <manufacturer_model_designation>JM010</manufacturer_model_designation>
+         <range>
+            <minimum_drive_speed>0.2</minimum_drive_speed>
+            <maximum_drive_speed>36000</maximum_drive_speed>
+            <minimum_drive_torque>3</minimum_drive_torque>
+            <maximum_drive_torque>200</maximum_drive_torque>
+         </range>
+         <spindle_nose_designation>A2-5</spindle_nose_designation>
+         <spindle_bore_diameter>100</spindle_bore_diameter>
+         <round_bar_stock_diameter />
+         <through_hole_diameter />
+         <hex_bar_stock_capacity />
+         <chuck>
+            <description />
+            <minimum_part_diameter />
+            <maximum_part_diameter />
+            <number_of_jaws />
+         </chuck>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>spindle</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <spindle_power>15000</spindle_power>
+         <spindle_name>Main spindle</spindle_name>
+         <spindle_manufacturer>Jmtba Co.</spindle_manufacturer>
+         <manufacturer_model_designation>JM010</manufacturer_model_designation>
+         <range>
+            <minimum_drive_speed>0.2</minimum_drive_speed>
+            <maximum_drive_speed>200</maximum_drive_speed>
+            <minimum_drive_torque>3</minimum_drive_torque>
+            <maximum_drive_torque>200</maximum_drive_torque>
+         </range>
+         <spindle_tool_holder_style_designation>BT40</spindle_tool_holder_style_designation>
+         <coolant_through_spindle>T</coolant_through_spindle>
+         <spindle_taper_designation>7/24 taper</spindle_taper_designation>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>tool_magazine</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <number_of_tools>40</number_of_tools>
+         <random_access>T</random_access>
+         <diameter_full>90</diameter_full>
+         <diameter_empty>120</diameter_empty>
+         <tool_length>300</tool_length>
+         <tool_weight>8</tool_weight>
+         <storage_configuration>BI_DIRECTIONAL</storage_configuration>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>turret</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <spindle_name>turret</spindle_name>
+         <number_of_fixed_tools>12</number_of_fixed_tools>
+         <number_of_rotating_tools>0</number_of_rotating_tools>
+         <cut_to_cut_min_turret_index_time />
+         <cut_to_cut_max_turret_index_time />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Tailstock</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <spindle_name>First Main spindle</spindle_name>
+         <taper>MT#4</taper>
+         <maximum_workpiece_weight_of_quill>100</maximum_workpiece_weight_of_quill>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>coolant</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <coolant_type />
+         <means_of_delivery />
+         <capacity_of_coolant_tank />
+         <coolant_weight />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>coolant</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <coolant_type />
+         <means_of_delivery />
+         <capacity_of_coolant_tank />
+         <coolant_weight />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>tool_breakage</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <device_id>
+            <id>H06-6447</id>
+            <model_name>YST-100</model_name>
+            <serial_number>71-19941126</serial_number>
+            <manufacturer>Jmt electron Co</manufacturer>
+            <date_manufactured>2011,30,4</date_manufactured>
+         </device_id>
+      </capabilities>
+   </its_elements>
+</machine_tool_specification>
+```
+
+## <a name="zalacznik-4"></a> Załącznik 4. Wygenerowany dokument XML dla centrum obróbczego (rekord „2”)
+
+Niniejszy załącznik przedstawia wygenerowany dokument XML na podstawie
+wprowadzonych danych do aplikacji (na podstawie rekordu „2”). Wygenerowany dokument
+dotyczy centrum obróbczego.
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<machine_tool_specification>
+   <description>Machining Centre specification data for sample</description>
+   <machine_class>MACHINING_CENTRE</machine_class>
+   <device_id>
+      <id>X06-6436</id>
+      <model_name>STY-5000</model_name>
+      <serial_number>37-19621201</serial_number>
+      <manufacturer>Jmtba Co</manufacturer>
+      <date_manufactured>2010,30,4</date_manufactured>
+   </device_id>
+   <machining_capabilities>
+      <capability>MILLING_CAPABILITY</capability>
+      <machining_accuracy />
+      <description />
+      <machining_size>
+         <description />
+         <x />
+         <y />
+         <z />
+      </machining_size>
+   </machining_capabilities>
+   <machining_capabilities>
+      <capability>DRILLING_CAPABILITY</capability>
+      <machining_accuracy />
+      <description />
+      <machining_size>
+         <description />
+         <x />
+         <y />
+         <z />
+      </machining_size>
+   </machining_capabilities>
+   <machining_capabilities>
+      <capability>BORING_CAPABILITY</capability>
+      <machining_accuracy />
+      <description />
+      <machining_size>
+         <description />
+         <x />
+         <y />
+         <z />
+      </machining_size>
+   </machining_capabilities>
+   <measuring_capability>
+      <measuring_accuracy />
+      <description />
+   </measuring_capability>
+   <environmental_evaluation>
+      <evaluation_name />
+      <power_in_idling />
+      <time_for_warming_up />
+   </environmental_evaluation>
+   <location>
+      <business_unit>2010,30,4</business_unit>
+      <plant_location>B02</plant_location>
+      <building>C33</building>
+      <cell>D05</cell>
+   </location>
+   <installation>
+      <weight>1200</weight>
+      <air_pressure_requirement />
+      <water_flow_rate />
+      <size>
+         <machine_length>4500</machine_length>
+         <machine_width>2800</machine_width>
+         <machine_height>3100</machine_height>
+      </size>
+      <electrical>
+         <electric_phase>3</electric_phase>
+         <electric_power>22000</electric_power>
+         <electrical_current>60000</electrical_current>
+         <electrical_frequency>50/60hX</electrical_frequency>
+         <electrical_grounding>TT</electrical_grounding>
+         <electrical_voltage>200</electrical_voltage>
+      </electrical>
+      <hydraulics>
+         <type_of_hydraulic_oil>water solubility/no water
+solubility</type_of_hydraulic_oil>
+         <pump_outlet_pressure>3500000</pump_outlet_pressure>
+         <capacity_of_hydraulics_tank>750</capacity_of_hydraulics_tank>
+      </hydraulics>
+   </installation>
+   <its_elements>
+      <name>X Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>X</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>725</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>800</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>500</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Y Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>Y</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>500</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>800</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>500</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>Z Linear axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>Z</axis_name>
+         <minimum_range_of_motion>0</minimum_range_of_motion>
+         <maximum_range_of_motion>500</maximum_range_of_motion>
+         <displacement_error>0.003</displacement_error>
+         <repeatability_error>0.001</repeatability_error>
+         <rapid_traverse_feed_rate>800</rapid_traverse_feed_rate>
+         <minimum_cutting_feed_rate>0.2</minimum_cutting_feed_rate>
+         <maximum_cutting_feed_rate>500</maximum_cutting_feed_rate>
+         <maximum_acceleration />
+         <maximum_deceleration />
+         <maximum_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>B Rotary axis</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <axis_name>B</axis_name>
+         <displacement_angle_error>0.1</displacement_angle_error>
+         <repeatability_angle_error>0.05</repeatability_angle_error>
+         <rapid_traverse_rotation_feed_rate>1</rapid_traverse_rotation_feed_rate>
+         <minimum_cutting_rotation_feed_rate>0.02</minimum_cutting_rotation_feed_rate>
+         <maximum_cutting_rotation_feed_rate>0.2</maximum_cutting_rotation_feed_rate>
+         <maximum_rotation_acceleration />
+         <maximum_rotation_deceleration />
+         <maximum_rotation_jerk />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>coolant</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <coolant_type>FLOOD</coolant_type>
+         <means_of_delivery>THRU_SPINDLE</means_of_delivery>
+         <capacity_of_coolant_tank>0.75</capacity_of_coolant_tank>
+         <coolant_weight />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>pallet</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <rotatable>485</rotatable>
+         <workpiece_weight />
+         <fixture_style />
+         <chuck>
+            <description />
+            <minimum_part_diameter />
+            <maximum_part_diameter />
+            <number_of_jaws />
+         </chuck>
+         <t_slot>
+            <number_of_t_slots>5</number_of_t_slots>
+            <t_slot_size>15</t_slot_size>
+            <distance_between_t_slot_centers>80</distance_between_t_slot_centers>
+         </t_slot>
+         <table_diameter />
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>spindle</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <spindle_power>15000</spindle_power>
+         <spindle_name>Main spindle</spindle_name>
+         <spindle_manufacturer>Jmtba Co.</spindle_manufacturer>
+         <manufacturer_model_designation>JM010</manufacturer_model_designation>
+         <range>
+            <minimum_drive_speed>0.2</minimum_drive_speed>
+            <maximum_drive_speed>200</maximum_drive_speed>
+            <minimum_drive_torque>3</minimum_drive_torque>
+            <maximum_drive_torque>200</maximum_drive_torque>
+         </range>
+         <spindle_tool_holder_style_designation>BT30</spindle_tool_holder_style_designation>
+         <coolant_through_spindle>T</coolant_through_spindle>
+         <spindle_taper_designation>7/24 taper</spindle_taper_designation>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>tool_magazine</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <number_of_tools>36</number_of_tools>
+         <random_access>T</random_access>
+         <diameter_full>70</diameter_full>
+         <diameter_empty>140</diameter_empty>
+         <tool_length>300</tool_length>
+         <tool_weight>t</tool_weight>
+         <storage_configuration>BI_DIRECTIONAL</storage_configuration>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>tool_changer</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <spindle_name>Main spindle</spindle_name>
+         <cut_to_cut_min_tool_change_time>7</cut_to_cut_min_tool_change_time>
+         <cut_to_cut_max_tool_change_time>20</cut_to_cut_max_tool_change_time>
+      </capabilities>
+   </its_elements>
+   <its_elements>
+      <name>tool_breakage</name>
+      <description />
+      <weight />
+      <capabilities>
+         <description />
+         <device_id>
+            <id>H06-6447</id>
+            <model_name>YST-100</model_name>
+            <serial_number>71-19941126</serial_number>
+            <manufacturer>Jmt electron Co</manufacturer>
+            <date_manufactured>2010,30,4</date_manufactured>
+         </device_id>
+      </capabilities>
+   </its_elements>
+</machine_tool_specification>
+```
