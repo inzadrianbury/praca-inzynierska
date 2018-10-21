@@ -2403,7 +2403,18 @@ otworzyć strony, lub wyświetlana strona internetowa nie będzie działać, lub
 poprawnie. Lista przeglądarek, które najprawdopodobniej są wstanie uruchomić napisaną
 aplikację została przedstawiona w tab. 6-1.
 
-// ToDo: Add table with supported browsers
+*tab. 6 1 Lista obsługiwanych przeglądarek przez aplikację [49]*
+
+| Przeglądarka             	| Wspierana wersja                                                   	|
+|--------------------------	|--------------------------------------------------------------------	|
+| Chrom                    	| Najnowsza                                                          	|
+| Firefox                  	| Najnowsza                                                          	|
+| Edge                     	| Dwie najnowsze główne                                              	|
+| Internet Explorer        	| 11, 10, 9                                                          	|
+| Internet Explorer Mobile 	| 11                                                                 	|
+| Safari                   	| Dwie najnowsze główne                                              	|
+| iOS                      	| Dwie najnowsze główne                                              	|
+| Android                  	| Nougat (7.0), Marshmallow (6.0), Lollipop (5.0, 5.1), KitKat (4.4) 	|
 
 Kolejnym ograniczeniem jest dla aplikacji jest minimalna rozdzielczość ekranu
 urządzenia, na którym dana strona zostanie wyświetlona. Napisana aplikacja została
