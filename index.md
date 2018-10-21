@@ -2813,7 +2813,16 @@ zmian, co przekłada się na 547 linii kodu. Dokładne statystyki napisanych apl
 przedstawiony w tab. 10-1.
 
 *tab. 10-1 Statystyki plików źródłowych napisanych aplikacji*
-// ToDo: Add table with statistic
+
+|   	                        | Rodzaj pliku  	    | Liczba plików    	|  Łączna ilość linii kodu  |
+|------------------------       |---------------	    |----------------	|--------------------------	|
+| **Aplikacja front-end’owa** 	| HTML          	    | 88                | 1116  	                |
+|               	            | CSS           	    | 88                | 183   	                |
+|               	            | TS            	    | 295               | 8331  	                | 
+|               	            | Razem         	    | 471               | 9630  	                |
+| **Aplikacja back-end’owa**    | JS             	    | 15                | 547     	                |
+|   	                        | Razem           	    | 15                | 547   	                |
+|               	            | **Podsumowanie**  	| **486**           | **10177** 	            |
 
 Oprócz narzędzi opisanych w poprzednich rozdziałach zostały również wykorzystane
 inne, niezwiązane z bezpośrednio z aplikacjami. Te narzędzia to:
