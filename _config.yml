@@ -1,9 +1,0 @@
-title: Praca dyplomowa (inżynierska)
-description: APLIKACJA INTERNETOWA DO GENEROWANIA DANYCH XML DLA OPISU OBRABIAREK CNC WEDŁUG NORMY ISO 14649-201
-
-show_downloads: true
-
-github:
-  pdf_url: https://github.com/inzadrianbury/inzadrianbury.github.io/raw/master/Praca%20dyplomowa%20-%20Adrian%20Bury.pdf
-
-theme: jekyll-theme-hacker
